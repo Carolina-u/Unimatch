@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unimatch - Panel de Control</title>
+    <link rel="stylesheet" href="PaneldeControl.css">
+</head>
+<body>
+    <div class="container">
+        <nav>
+            <h2>Unimatch Admin</h2>
+            <ul>
+                <li><a href="#" onclick="mostrarSeccion('inicio')">Inicio</a></li>
+                <li><a href="#" onclick="mostrarSeccion('universidades')">Universidades</a></li>
+                <li><a href="#" onclick="mostrarSeccion('carreras')">Carreras de Pregrado</a></li>
+                <li><a href="#" onclick="mostrarSeccion('preguntas')">Encuestas</a></li>
+                <li><a href="#" onclick="mostrarSeccion('usuarios')">Usuarios</a></li>
+            </ul>
+        </nav>
+        <main>
+            <!-- INICIO -->
+            <section id="inicio">
+                <h2>Panel de Control</h2>
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-number" id="kpiUniversidades">0</div>
+                        <div>Universidades</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-number" id="kpiCarreras">0</div>
+                        <div>Carreras</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-number" id="kpiPreguntas">0</div>
+                        <div>Preguntas</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- UNIVERSIDADES -->
+            <section id="universidades">
+                <h2>Gestión de Universidades</h2>
+                <form onsubmit="return guardarUniversidad(event)">
+                    <input type="hidden" id="u_id_universidad">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Nombre</label>
+                            <input type="text" id="u_nombre" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Sitio Web</label>
+                            <input type="url" id="u_sitio">
+                        </div>
+                        <div class="form-group">
+                            <label>Ciudad</label>
+                            <input type="text" id="u_ciudad">
+                        </div>
+                        <div class="form-group">
+                            <label>Departamento</label>
+                            <input type="text" id="u_departamento">
+                        </div>
+                        <div class="form-group">
+                            <label>Estado</label>
+                            <select id="u_estado"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Descripción</label>
+                            <textarea id="u_descripcion" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button type="submit">Guardar Universidad</button>
+                        <button type="button" class="secondary" onclick="limpiarFormUniversidad()">Limpiar</button>
+                    </div>
+                </form>
+                <div id="listaUniversidades"></div>
+            </section>
+
+            <!-- CARRERAS -->
+            <section id="carreras">
+                <h2>Gestión de Carreras</h2>
+                <form onsubmit="return guardarCarrera(event)">
+                    <input type="hidden" id="c_id_carrera">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Nombre</label>
+                            <input type="text" id="c_nombre" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Área Vocacional</label>
+                            <select id="c_area"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Universidad</label>
+                            <select id="c_universidad"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Descripción</label>
+                            <textarea id="c_descripcion" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button type="submit">Guardar Carrera</button>
+                        <button type="button" class="secondary" onclick="limpiarFormCarrera()">Limpiar</button>
+                    </div>
+                </form>
+                <div id="listaCarreras"></div>
+            </section>
+
+            <!-- ENCUESTAS -->
+            <section id="preguntas">
+                <h2>Gestión de Encuestas</h2>
+                
+                <!-- Formulario Encuesta -->
+                <h3>Encuesta</h3>
+                <form onsubmit="return guardarEncuesta(event)">
+                    <input type="hidden" id="e_id_encuesta">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Nombre</label>
+                            <input type="text" id="e_nombre" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Descripción</label>
+                            <textarea id="e_descripcion" rows="2"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Estado</label>
+                            <select id="e_activa">
+                                <option value="1">Activa</option>
+                                <option value="0">Inactiva</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button type="submit">Guardar Encuesta</button>
+                        <button type="button" class="secondary" onclick="limpiarFormEncuesta()">Limpiar</button>
+                    </div>
+                </form>
+
+                <!-- Formulario Pregunta -->
+                <h3 style="margin-top: 30px;">Pregunta</h3>
+                <form onsubmit="return guardarPregunta(event)">
+                    <input type="hidden" id="p_id_pregunta">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Encuesta</label>
+                            <select id="p_encuesta"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Enunciado</label>
+                            <input type="text" id="p_enunciado" required>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button type="submit">Guardar Pregunta</button>
+                        <button type="button" class="secondary" onclick="limpiarFormPregunta()">Limpiar</button>
+                    </div>
+                </form>
+
+                <!-- Formulario Opción -->
+                <h3 style="margin-top: 30px;">Opción</h3>
+                <form onsubmit="return guardarOpcion(event)">
+                    <input type="hidden" id="o_id_opcion">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Pregunta</label>
+                            <select id="o_pregunta"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Texto de la opción</label>
+                            <input type="text" id="o_texto" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Área (opcional)</label>
+                            <select id="o_area">
+                                <option value="">— Sin área —</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button type="submit">Guardar Opción</button>
+                        <button type="button" class="secondary" onclick="limpiarFormOpcion()">Limpiar</button>
+                    </div>
+                </form>
+
+                <div id="listaPreguntas" style="margin-top: 30px;"></div>
+            </section>
+
+            <!-- USUARIOS -->
+            <section id="usuarios">
+                <h2>Gestión de Administradores</h2>
+                <form onsubmit="return guardarAdmin(event)">
+                    <input type="hidden" id="a_id_administrador">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Nombre</label>
+                            <input type="text" id="a_nombre" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Correo</label>
+                            <input type="email" id="a_correo" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Contraseña</label>
+                            <input type="password" id="a_contrasena">
+                            <small class="muted">Dejar en blanco para no cambiar</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Rol</label>
+                            <select id="a_rol"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Estado</label>
+                            <select id="a_activo">
+                                <option value="1">Activo</option>
+                                <option value="0">Inactivo</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button type="submit">Guardar Administrador</button>
+                        <button type="button" class="secondary" onclick="limpiarFormAdmin()">Limpiar</button>
+                    </div>
+                </form>
+                <div id="listaUsuarios"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="PaneldeControl.js"></script>
+</body>
+</html>

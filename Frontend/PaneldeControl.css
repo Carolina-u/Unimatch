@@ -1,0 +1,66 @@
+    /* Si ya tienes PaneldeControl.css puedes omitir este bloque;
+       lo dejo mínimo para que sea usable sin CSS externo. */
+    :root {
+      --bg: #0f0d14;
+      --surface: #16121d;
+      --surface-2: #1c1726;
+      --border: #2a2335;
+      --text: #e8e3f6;
+      --text-muted: #c9c2da;
+      --accent: #6c4eb6;
+      --accent-600: #7d5fca;
+      --error: #ff6b7a;
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text);
+      font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, Arial, sans-serif;
+      display: grid; grid-template-columns: 260px 1fr; min-height: 100vh;
+    }
+    .container { display: contents; }
+    .sidebar {
+      background: var(--surface); border-right: 1px solid var(--border); padding: 20px;
+      position: sticky; top: 0; height: 100vh; overflow: auto;
+    }
+    .sidebar h2 { margin: 0 0 16px; font-size: 1.2rem; color: #efeaff; }
+    .sidebar ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+    .sidebar li {
+      padding: 10px 12px; border-radius: 10px; cursor: pointer; color: var(--text-muted);
+    }
+    .sidebar li:hover { background: #1a1524; color: var(--text); }
+    .contenido { padding: 22px; background: radial-gradient(1000px 700px at 10% -10%, #151021 0%, var(--bg) 55%); }
+    section { background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%); padding: 18px; border: 1px solid var(--border); border-radius: var(--radius); }
+    h1 { margin: 0 0 14px; font-size: 1.4rem; }
+    .grid { display: grid; gap: 12px; }
+    .row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .row-3 { grid-template-columns: repeat(3, 1fr); }
+    .row-2 { grid-template-columns: repeat(2, 1fr); }
+    label { font-size: 0.9rem; color: var(--text-muted); display: block; margin-bottom: 6px; }
+    input, select, textarea {
+      width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border);
+      background: #120e1a; color: var(--text);
+    }
+    textarea { min-height: 80px; resize: vertical; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    button {
+      padding: 10px 12px; border-radius: 10px; border: 1px solid transparent;
+      background: linear-gradient(180deg, var(--accent) 0%, #5c3fa3 100%);
+      color: white; cursor: pointer; font-weight: 600;
+    }
+    button.secondary {
+      background: #1d1829; border: 1px solid var(--border); color: var(--text);
+    }
+    button.danger {
+      background: linear-gradient(180deg, #ff6b7a 0%, #e45464 100%);
+    }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 10px; border-bottom: 1px solid var(--border); text-align: left; }
+    th { color: var(--text-muted); font-weight: 600; }
+    .muted { color: var(--text-muted); }
+    .pill { padding: 2px 8px; border-radius: 999px; background: #201a2b; border: 1px solid var(--border); font-size: 0.78rem; }
+    @media (max-width: 960px) {
+      body { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; }
+      .row, .row-2, .row-3 { grid-template-columns: 1fr; }
+    }
