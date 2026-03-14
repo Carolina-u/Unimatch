@@ -16,7 +16,7 @@ CONEXION MYSQL (POOL)
 const db = mysql.createPool({
     host: "localhost",
     user: "root",
-    password: "729004",
+    password: "",
     database: "Unimatch"
 });
 const SECRET_KEY = "unimatch_key";
