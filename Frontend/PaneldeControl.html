@@ -3,232 +3,223 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unimatch - Panel de Control</title>
+    <title>Unimatch - Panel Administrativo</title>
     <link rel="stylesheet" href="PaneldeControl.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
         <nav>
-            <h2>Unimatch Admin</h2>
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <h2>Unimatch Admin</h2>
+            </div>
             <ul>
-                <li><a href="#" onclick="mostrarSeccion('inicio')">Inicio</a></li>
-                <li><a href="#" onclick="mostrarSeccion('universidades')">Universidades</a></li>
-                <li><a href="#" onclick="mostrarSeccion('carreras')">Carreras de Pregrado</a></li>
-                <li><a href="#" onclick="mostrarSeccion('preguntas')">Encuestas</a></li>
-                <li><a href="#" onclick="mostrarSeccion('usuarios')">Usuarios</a></li>
+                <li><a href="#" onclick="mostrarSeccion('dashboard')"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+                <li><a href="#" onclick="mostrarSeccion('universidades')"><i class="fas fa-university"></i> Universidades</a></li>
+                <li><a href="#" onclick="mostrarSeccion('carreras')"><i class="fas fa-book"></i> Carreras</a></li>
+                <li><a href="#" onclick="mostrarSeccion('administradores')"><i class="fas fa-users"></i> Administradores</a></li>
+                <li><a href="#" onclick="cerrarSesion()" class="logout"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
             </ul>
         </nav>
+
         <main>
-            <!-- INICIO -->
-            <section id="inicio">
-                <h2>Panel de Control</h2>
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="active">
+                <div class="section-header">
+                    <h2><i class="fas fa-chart-pie"></i> Dashboard de Estadísticas</h2>
+                    <button onclick="actualizarDashboard()" class="btn-refresh"><i class="fas fa-sync-alt"></i> Actualizar</button>
+                </div>
                 <div class="kpi-grid">
                     <div class="kpi-card">
-                        <div class="kpi-number" id="kpiUniversidades">0</div>
-                        <div>Universidades</div>
+                        <i class="fas fa-university"></i>
+                        <div class="kpi-info">
+                            <h3>Universidades</h3>
+                            <span id="dashUnis">0</span>
+                        </div>
                     </div>
                     <div class="kpi-card">
-                        <div class="kpi-number" id="kpiCarreras">0</div>
-                        <div>Carreras</div>
+                        <i class="fas fa-book"></i>
+                        <div class="kpi-info">
+                            <h3>Carreras</h3>
+                            <span id="dashCarreras">0</span>
+                        </div>
                     </div>
                     <div class="kpi-card">
-                        <div class="kpi-number" id="kpiPreguntas">0</div>
-                        <div>Preguntas</div>
+                        <i class="fas fa-clipboard-list"></i>
+                        <div class="kpi-info">
+                            <h3>Tests Realizados</h3>
+                            <span id="dashTests">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="charts-container">
+                    <div class="chart-card">
+                        <h3>Distribución por Áreas Vocacionales</h3>
+                        <canvas id="chartAreas"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <h3>Top 10 Universidades con más Carreras</h3>
+                        <canvas id="chartUnis"></canvas>
                     </div>
                 </div>
             </section>
 
-            <!-- UNIVERSIDADES -->
-            <section id="universidades">
-                <h2>Gestión de Universidades</h2>
-                <form onsubmit="return guardarUniversidad(event)">
-                    <input type="hidden" id="u_id_universidad">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Nombre</label>
-                            <input type="text" id="u_nombre" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Sitio Web</label>
-                            <input type="url" id="u_sitio">
-                        </div>
-                        <div class="form-group">
-                            <label>Ciudad</label>
-                            <input type="text" id="u_ciudad">
-                        </div>
-                        <div class="form-group">
-                            <label>Departamento</label>
-                            <input type="text" id="u_departamento">
-                        </div>
-                        <div class="form-group">
-                            <label>Estado</label>
-                            <select id="u_estado"></select>
-                        </div>
-                        <div class="form-group">
-                            <label>Descripción</label>
-                            <textarea id="u_descripcion" rows="2"></textarea>
-                        </div>
-                    </div>
-                    <div class="actions">
-                        <button type="submit">Guardar Universidad</button>
-                        <button type="button" class="secondary" onclick="limpiarFormUniversidad()">Limpiar</button>
-                    </div>
-                </form>
-                <div id="listaUniversidades"></div>
-            </section>
-
-            <!-- CARRERAS -->
-            <section id="carreras">
-                <h2>Gestión de Carreras</h2>
-                <form onsubmit="return guardarCarrera(event)">
-                    <input type="hidden" id="c_id_carrera">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Nombre</label>
-                            <input type="text" id="c_nombre" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Área Vocacional</label>
-                            <select id="c_area"></select>
-                        </div>
-                        <div class="form-group">
-                            <label>Universidad</label>
-                            <select id="c_universidad"></select>
-                        </div>
-                        <div class="form-group">
-                            <label>Descripción</label>
-                            <textarea id="c_descripcion" rows="2"></textarea>
-                        </div>
-                    </div>
-                    <div class="actions">
-                        <button type="submit">Guardar Carrera</button>
-                        <button type="button" class="secondary" onclick="limpiarFormCarrera()">Limpiar</button>
-                    </div>
-                </form>
-                <div id="listaCarreras"></div>
-            </section>
-
-            <!-- ENCUESTAS -->
-            <section id="preguntas">
-                <h2>Gestión de Encuestas</h2>
+            <!-- Universidades Section -->
+            <section id="universidades" style="display:none;">
+                <div class="section-header">
+                    <h2><i class="fas fa-university"></i> Gestión de Universidades</h2>
+                    <button onclick="mostrarFormularioUniversidad()" class="btn-primary"><i class="fas fa-plus"></i> Nueva Universidad</button>
+                </div>
                 
-                <!-- Formulario Encuesta -->
-                <h3>Encuesta</h3>
-                <form onsubmit="return guardarEncuesta(event)">
-                    <input type="hidden" id="e_id_encuesta">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Nombre</label>
-                            <input type="text" id="e_nombre" required>
+                <div id="formUniversidad" class="form-card" style="display:none;">
+                    <h3>Registrar Universidad</h3>
+                    <form onsubmit="guardarUniversidad(event)">
+                        <input type="hidden" id="u_id">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Nombre *</label>
+                                <input type="text" id="u_nom" placeholder="Nombre de la universidad" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Ciudad *</label>
+                                <input type="text" id="u_ciu" placeholder="Ciudad" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Departamento *</label>
+                                <input type="text" id="u_dep" placeholder="Departamento" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Estado *</label>
+                                <select id="u_estado" required>
+                                    <option value="">Seleccionar estado...</option>
+                                </select>
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Sitio Web</label>
+                                <input type="url" id="u_web" placeholder="https://">
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Descripción</label>
+                                <textarea id="u_des" rows="3" placeholder="Descripción de la universidad"></textarea>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Descripción</label>
-                            <textarea id="e_descripcion" rows="2"></textarea>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-success">Guardar</button>
+                            <button type="button" onclick="ocultarFormularioUniversidad()" class="btn-secondary">Cancelar</button>
                         </div>
-                        <div class="form-group">
-                            <label>Estado</label>
-                            <select id="e_activa">
-                                <option value="1">Activa</option>
-                                <option value="0">Inactiva</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="actions">
-                        <button type="submit">Guardar Encuesta</button>
-                        <button type="button" class="secondary" onclick="limpiarFormEncuesta()">Limpiar</button>
-                    </div>
-                </form>
+                    </form>
+                </div>
 
-                <!-- Formulario Pregunta -->
-                <h3 style="margin-top: 30px;">Pregunta</h3>
-                <form onsubmit="return guardarPregunta(event)">
-                    <input type="hidden" id="p_id_pregunta">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Encuesta</label>
-                            <select id="p_encuesta"></select>
-                        </div>
-                        <div class="form-group">
-                            <label>Enunciado</label>
-                            <input type="text" id="p_enunciado" required>
-                        </div>
+                <div class="table-container">
+                    <div class="table-header">
+                        <input type="text" id="searchUni" placeholder="Buscar universidad..." onkeyup="filtrarUniversidades()">
                     </div>
-                    <div class="actions">
-                        <button type="submit">Guardar Pregunta</button>
-                        <button type="button" class="secondary" onclick="limpiarFormPregunta()">Limpiar</button>
-                    </div>
-                </form>
-
-                <!-- Formulario Opción -->
-                <h3 style="margin-top: 30px;">Opción</h3>
-                <form onsubmit="return guardarOpcion(event)">
-                    <input type="hidden" id="o_id_opcion">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Pregunta</label>
-                            <select id="o_pregunta"></select>
-                        </div>
-                        <div class="form-group">
-                            <label>Texto de la opción</label>
-                            <input type="text" id="o_texto" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Área (opcional)</label>
-                            <select id="o_area">
-                                <option value="">— Sin área —</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="actions">
-                        <button type="submit">Guardar Opción</button>
-                        <button type="button" class="secondary" onclick="limpiarFormOpcion()">Limpiar</button>
-                    </div>
-                </form>
-
-                <div id="listaPreguntas" style="margin-top: 30px;"></div>
+                    <div id="listaUnis"></div>
+                </div>
             </section>
 
-            <!-- USUARIOS -->
-            <section id="usuarios">
-                <h2>Gestión de Administradores</h2>
-                <form onsubmit="return guardarAdmin(event)">
-                    <input type="hidden" id="a_id_administrador">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Nombre</label>
-                            <input type="text" id="a_nombre" required>
+            <!-- Carreras Section -->
+            <section id="carreras" style="display:none;">
+                <div class="section-header">
+                    <h2><i class="fas fa-book"></i> Gestión de Carreras</h2>
+                    <button onclick="mostrarFormularioCarrera()" class="btn-primary"><i class="fas fa-plus"></i> Nueva Carrera</button>
+                </div>
+                
+                <div id="formCarrera" class="form-card" style="display:none;">
+                    <h3>Registrar Carrera</h3>
+                    <form onsubmit="guardarCarrera(event)">
+                        <input type="hidden" id="c_id">
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label>Nombre de la Carrera *</label>
+                                <input type="text" id="c_nom" placeholder="Ej: Ingeniería de Sistemas" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Área Vocacional *</label>
+                                <select id="c_area" required>
+                                    <option value="">Seleccionar área...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Universidad *</label>
+                                <select id="c_uni" required>
+                                    <option value="">Seleccionar universidad...</option>
+                                </select>
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Descripción / Perfil</label>
+                                <textarea id="c_des" rows="3" placeholder="Descripción de la carrera, perfil profesional, campo laboral..."></textarea>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Correo</label>
-                            <input type="email" id="a_correo" required>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-success">Guardar</button>
+                            <button type="button" onclick="ocultarFormularioCarrera()" class="btn-secondary">Cancelar</button>
                         </div>
-                        <div class="form-group">
-                            <label>Contraseña</label>
-                            <input type="password" id="a_contrasena">
-                            <small class="muted">Dejar en blanco para no cambiar</small>
-                        </div>
-                        <div class="form-group">
-                            <label>Rol</label>
-                            <select id="a_rol"></select>
-                        </div>
-                        <div class="form-group">
-                            <label>Estado</label>
-                            <select id="a_activo">
-                                <option value="1">Activo</option>
-                                <option value="0">Inactivo</option>
-                            </select>
-                        </div>
+                    </form>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <input type="text" id="searchCarrera" placeholder="Buscar carrera..." onkeyup="filtrarCarreras()">
                     </div>
-                    <div class="actions">
-                        <button type="submit">Guardar Administrador</button>
-                        <button type="button" class="secondary" onclick="limpiarFormAdmin()">Limpiar</button>
-                    </div>
-                </form>
-                <div id="listaUsuarios"></div>
+                    <div id="listaCarreras"></div>
+                </div>
+            </section>
+
+            <!-- Administradores Section -->
+            <section id="administradores" style="display:none;">
+                <div class="section-header">
+                    <h2><i class="fas fa-users"></i> Gestión de Administradores</h2>
+                    <button onclick="mostrarFormularioAdmin()" class="btn-primary"><i class="fas fa-plus"></i> Nuevo Administrador</button>
+                </div>
+                
+                <div id="formAdmin" class="form-card" style="display:none;">
+                    <h3>Registrar Administrador</h3>
+                    <form onsubmit="guardarAdministrador(event)">
+                        <input type="hidden" id="adm_id">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Nombre *</label>
+                                <input type="text" id="adm_nom" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Correo *</label>
+                                <input type="email" id="adm_correo" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Contraseña *</label>
+                                <input type="password" id="adm_pass" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Rol *</label>
+                                <select id="adm_rol" required></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Estado</label>
+                                <select id="adm_activo">
+                                    <option value="1">Activo</option>
+                                    <option value="0">Inactivo</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-success">Guardar</button>
+                            <button type="button" onclick="ocultarFormularioAdmin()" class="btn-secondary">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-container">
+                    <div id="listaAdmins"></div>
+                </div>
             </section>
         </main>
     </div>
-
+    
+    <div id="notification" class="notification" style="display:none;"></div>
+    
     <script src="PaneldeControl.js"></script>
 </body>
 </html>
