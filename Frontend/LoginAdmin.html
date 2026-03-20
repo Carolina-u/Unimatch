@@ -1,24 +1,61 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Login Administrador</title>
-<link rel="stylesheet" href="LoginAdmin.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Admin - Unimatch</title>
+    <link rel="stylesheet" href="LoginAdmin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-<div class="login-container">
-<h2>Login Administrador</h2>
-<form id="loginForm">
-<label>Correo</label>
-<input type="email" id="correo" required>
-<label>Contraseña</label>
-<input type="password" id="contrasena" required>
-<button type="submit">Ingresar</button>
-</form>
-</div>
-
-<script src="loginAdmin.js"></script>
-
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <i class="fas fa-graduation-cap"></i>
+                <h2>Unimatch Admin</h2>
+                <p>Panel de Administración</p>
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" id="correo" required placeholder="admin@unimatch.com">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="pass" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-login">Iniciar Sesión</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        document.getElementById('loginForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const correo = document.getElementById('correo').value;
+            const contrasena = document.getElementById('pass').value;
+            
+            try {
+                const res = await fetch('http://localhost:3000/api/login-admin', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ correo, contrasena })
+                });
+                
+                const data = await res.json();
+                
+                if(res.ok) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('rol', data.rol);
+                    localStorage.setItem('nombre', data.nombre);
+                    window.location.href = 'PaneldeControl.html';
+                } else {
+                    alert(data.mensaje);
+                }
+            } catch(error) {
+                console.error(error);
+                alert("Error conectando con el servidor");
+            }
+        };
+    </script>
 </body>
-
 </html>
