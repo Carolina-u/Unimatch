@@ -10,6 +10,7 @@ let db = {
 };
 let myChartAreas = null;
 let myChartUnis = null;
+let myChartDistribucion = null;
 let currentUserRol = localStorage.getItem("rol");
 
 if (!token) location.href = "loginAdmin.html";
@@ -48,16 +49,28 @@ async function loadData() {
         };
         
         // Llenar selects
-        document.getElementById('u_estado').innerHTML = '<option value="">Seleccionar estado...</option>' + 
-            ests.map(e => `<option value="${e.id_estado}">${e.nombre}</option>`).join('');
+        const uEstadoSelect = document.getElementById('u_estado');
+        if (uEstadoSelect) {
+            uEstadoSelect.innerHTML = '<option value="">Seleccionar estado...</option>' + 
+                ests.map(e => `<option value="${e.id_estado}">${e.nombre}</option>`).join('');
+        }
         
-        document.getElementById('c_area').innerHTML = '<option value="">Seleccionar área...</option>' + 
-            areas.map(a => `<option value="${a.id_area}">${a.nombre}</option>`).join('');
+        const cAreaSelect = document.getElementById('c_area');
+        if (cAreaSelect) {
+            cAreaSelect.innerHTML = '<option value="">Seleccionar área...</option>' + 
+                areas.map(a => `<option value="${a.id_area}">${a.nombre}</option>`).join('');
+        }
         
-        document.getElementById('c_uni').innerHTML = '<option value="">Seleccionar universidad...</option>' + 
-            unis.map(u => `<option value="${u.id_universidad}">${u.nombre}</option>`).join('');
+        const cUniSelect = document.getElementById('c_uni');
+        if (cUniSelect) {
+            cUniSelect.innerHTML = '<option value="">Seleccionar universidad...</option>' + 
+                unis.map(u => `<option value="${u.id_universidad}">${u.nombre}</option>`).join('');
+        }
         
-        document.getElementById('adm_rol').innerHTML = roles.map(r => `<option value="${r.id_rol}">${r.nombre}</option>`).join('');
+        const admRolSelect = document.getElementById('adm_rol');
+        if (admRolSelect) {
+            admRolSelect.innerHTML = roles.map(r => `<option value="${r.id_rol}">${r.nombre}</option>`).join('');
+        }
         
     } catch (error) {
         console.error("Error loading data:", error);
@@ -67,7 +80,8 @@ async function loadData() {
 
 function mostrarSeccion(id) {
     document.querySelectorAll('main section').forEach(s => s.style.display = 'none');
-    document.getElementById(id).style.display = 'block';
+    const section = document.getElementById(id);
+    if (section) section.style.display = 'block';
     if(id === 'dashboard') initDashboard();
     if(id === 'universidades') renderUnis();
     if(id === 'carreras') renderCarreras();
@@ -89,50 +103,83 @@ async function initDashboard() {
         const resUnis = await fetch(`${API}/admin/stats-universidades`, { headers });
         const dataUnis = await resUnis.json();
 
-        // Gráfico de áreas
-        const ctxAreas = document.getElementById('chartAreas').getContext('2d');
-        if (myChartAreas) myChartAreas.destroy();
-        myChartAreas = new Chart(ctxAreas, {
-            type: 'pie',
-            data: {
-                labels: dataAreas.map(a => a.nombre),
-                datasets: [{ 
-                    data: dataAreas.map(a => a.total), 
-                    backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec489a']
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { labels: { color: '#e2e8f0' } }
-                }
-            }
-        });
-        
-        // Gráfico de universidades
-        const ctxUnis = document.getElementById('chartUnis').getContext('2d');
-        if (myChartUnis) myChartUnis.destroy();
-        myChartUnis = new Chart(ctxUnis, {
-            type: 'bar',
-            data: {
-                labels: dataUnis.map(u => u.nombre),
-                datasets: [{ 
-                    label: 'Número de Carreras',
-                    data: dataUnis.map(u => u.total_carreras),
-                    backgroundColor: '#3b82f6'
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { labels: { color: '#e2e8f0' } }
+        // Gráfico de áreas (pastel)
+        const ctxAreas = document.getElementById('chartAreas');
+        if (ctxAreas) {
+            const ctx = ctxAreas.getContext('2d');
+            if (myChartAreas) myChartAreas.destroy();
+            myChartAreas = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: dataAreas.map(a => a.nombre),
+                    datasets: [{ 
+                        data: dataAreas.map(a => a.total), 
+                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec489a', '#06b6d4', '#f97316']
+                    }]
                 },
-                scales: {
-                    y: { ticks: { color: '#e2e8f0' } },
-                    x: { ticks: { color: '#e2e8f0' } }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { 
+                            labels: { color: '#e2e8f0' },
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                    return `${label}: ${value} tests (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
                 }
-            }
-        });
+            });
+        }
+        
+        // Gráfico de universidades (barras)
+        const ctxUnis = document.getElementById('chartUnis');
+        if (ctxUnis) {
+            const ctx = ctxUnis.getContext('2d');
+            if (myChartUnis) myChartUnis.destroy();
+            myChartUnis = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: dataUnis.map(u => u.nombre),
+                    datasets: [{ 
+                        label: 'Número de Carreras',
+                        data: dataUnis.map(u => u.total_carreras),
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { labels: { color: '#e2e8f0' } }
+                    },
+                    scales: {
+                        y: { 
+                            ticks: { color: '#e2e8f0', stepSize: 1 },
+                            grid: { color: '#334155' }
+                        },
+                        x: { 
+                            ticks: { color: '#e2e8f0' },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Cargar estadísticas de encuestas
+        await cargarEstadisticasEncuestas();
+        
     } catch (error) {
         console.error("Error loading dashboard:", error);
         mostrarNotificacion("Error al cargar el dashboard", "error");
@@ -142,6 +189,152 @@ async function initDashboard() {
 function actualizarDashboard() {
     initDashboard();
     mostrarNotificacion("Dashboard actualizado", "success");
+}
+
+// Cargar estadísticas de encuestas
+async function cargarEstadisticasEncuestas() {
+    try {
+        const headers = { "Authorization": token };
+        
+        // Obtener distribución de áreas
+        const resDistribucion = await fetch(`${API}/admin/encuesta/distribucion-areas`, { headers });
+        
+        if (!resDistribucion.ok) {
+            throw new Error("Error en la respuesta del servidor");
+        }
+        
+        const distribucion = await resDistribucion.json();
+        
+        // Total de tests
+        const totalTests = distribucion.reduce((sum, item) => sum + (item.total_tests || 0), 0);
+        const totalTestsElem = document.getElementById('totalTests');
+        if (totalTestsElem) totalTestsElem.textContent = totalTests;
+        
+        // Si no hay tests, mostrar mensaje amigable
+        if (totalTests === 0) {
+            const container = document.getElementById('ultimosTests');
+            if (container) {
+                container.innerHTML = '<p class="empty-message">📝 Aún no hay tests realizados. Cuando los usuarios completen el test vocacional, los resultados aparecerán aquí.</p>';
+            }
+            
+            // No mostrar gráfico vacío
+            const ctxDistribucion = document.getElementById('chartDistribucionAreas');
+            if (ctxDistribucion && window.myChartDistribucion) {
+                window.myChartDistribucion.destroy();
+            }
+            return;
+        }
+        
+        // Calcular tests de esta semana y promedio diario
+        const resStats = await fetch(`${API}/admin/encuesta/stats`, { headers });
+        const statsDiarios = await resStats.json() || [];
+        
+        // Promedio diario
+        const promedioDiario = statsDiarios.length > 0 
+            ? (statsDiarios.reduce((sum, d) => sum + d.cantidad, 0) / statsDiarios.length).toFixed(1)
+            : 0;
+        const promedioElem = document.getElementById('promedioDiario');
+        if (promedioElem) promedioElem.textContent = promedioDiario;
+        
+        // Tests esta semana
+        const hoy = new Date();
+        const inicioSemana = new Date(hoy);
+        inicioSemana.setDate(hoy.getDate() - hoy.getDay());
+        inicioSemana.setHours(0, 0, 0, 0);
+        
+        const testsSemana = statsDiarios
+            .filter(d => new Date(d.fecha) >= inicioSemana)
+            .reduce((sum, d) => sum + d.cantidad, 0);
+        const testsSemanaElem = document.getElementById('testsSemana');
+        if (testsSemanaElem) testsSemanaElem.textContent = testsSemana;
+        
+        // Gráfico de distribución de áreas
+        const ctxDistribucion = document.getElementById('chartDistribucionAreas');
+        if (ctxDistribucion) {
+            const ctx = ctxDistribucion.getContext('2d');
+            if (window.myChartDistribucion) window.myChartDistribucion.destroy();
+            window.myChartDistribucion = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: distribucion.map(d => d.area),
+                    datasets: [{
+                        label: 'Número de Tests',
+                        data: distribucion.map(d => d.total_tests || 0),
+                        backgroundColor: 'rgba(124, 108, 207, 0.8)',
+                        borderColor: '#7c6ccf',
+                        borderWidth: 1,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { 
+                            labels: { color: '#e2e8f0' } 
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.raw;
+                                    const porcentaje = distribucion[context.dataIndex]?.porcentaje || 0;
+                                    return `${value} tests (${porcentaje}%)`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            ticks: { color: '#e2e8f0', stepSize: 1 },
+                            grid: { color: '#334155' }
+                        },
+                        x: { 
+                            ticks: { color: '#e2e8f0' },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Últimos tests
+        const resUltimos = await fetch(`${API}/admin/encuesta/ultimas`, { headers });
+        const ultimosTests = await resUltimos.json();
+        
+        const container = document.getElementById('ultimosTests');
+        if (container) {
+            if (!ultimosTests || ultimosTests.length === 0) {
+                container.innerHTML = '<p class="empty-message">📊 Los resultados de tests aparecerán aquí cuando los usuarios realicen la encuesta</p>';
+            } else {
+                container.innerHTML = `
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Área Recomendada</th>
+                                <th>Universidad Sugerida</th>
+                            </thead>
+                            <tbody>
+                                ${ultimosTests.map(test => `
+                                    <tr>
+                                        <td>${test.fecha ? new Date(test.fecha).toLocaleString('es-CO') : 'Fecha no disponible'}</td>
+                                        <td><span class="badge-area">${test.area_resultado || 'N/A'}</span></td>
+                                        <td>${test.universidad_recomendada || 'Por definir'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+            }
+        }
+        
+    } catch (error) {
+        console.error("Error cargando estadísticas de encuestas:", error);
+        const container = document.getElementById('ultimosTests');
+        if (container) {
+            container.innerHTML = '<p class="empty-message">📊 Los tests vocacionales aparecerán aquí cuando los usuarios realicen la encuesta. Por ahora no hay datos.</p>';
+        }
+    }
 }
 
 // CRUD Universidades
@@ -222,6 +415,8 @@ async function eliminarUniversidad(id) {
 
 function renderUnis() {
     const container = document.getElementById('listaUnis');
+    if (!container) return;
+    
     if (db.universidad.length === 0) {
         container.innerHTML = '<p class="empty-message">No hay universidades registradas</p>';
         return;
@@ -260,6 +455,10 @@ function renderUnis() {
             </tbody>
         </table>
     `;
+    
+    // Actualizar contador
+    const uniCount = document.getElementById('uniCount');
+    if (uniCount) uniCount.textContent = db.universidad.length;
 }
 
 function filtrarUniversidades() {
@@ -270,6 +469,8 @@ function filtrarUniversidades() {
     );
     
     const container = document.getElementById('listaUnis');
+    if (!container) return;
+    
     if (filtered.length === 0) {
         container.innerHTML = '<p class="empty-message">No se encontraron universidades</p>';
         return;
@@ -308,14 +509,20 @@ function filtrarUniversidades() {
             </tbody>
         </table>
     `;
+    
+    // Actualizar contador
+    const uniCount = document.getElementById('uniCount');
+    if (uniCount) uniCount.textContent = filtered.length;
 }
 
 function mostrarFormularioUniversidad() {
-    document.getElementById('formUniversidad').style.display = 'block';
+    const form = document.getElementById('formUniversidad');
+    if (form) form.style.display = 'block';
 }
 
 function ocultarFormularioUniversidad() {
-    document.getElementById('formUniversidad').style.display = 'none';
+    const form = document.getElementById('formUniversidad');
+    if (form) form.style.display = 'none';
     document.getElementById('u_id').value = '';
     document.getElementById('u_nom').value = '';
     document.getElementById('u_ciu').value = '';
@@ -399,6 +606,8 @@ async function eliminarCarrera(id) {
 
 function renderCarreras() {
     const container = document.getElementById('listaCarreras');
+    if (!container) return;
+    
     if (db.carrera.length === 0) {
         container.innerHTML = '<p class="empty-message">No hay carreras registradas</p>';
         return;
@@ -435,6 +644,10 @@ function renderCarreras() {
             </tbody>
         </table>
     `;
+    
+    // Actualizar contador
+    const carreraCount = document.getElementById('carreraCount');
+    if (carreraCount) carreraCount.textContent = db.carrera.length;
 }
 
 function filtrarCarreras() {
@@ -445,6 +658,8 @@ function filtrarCarreras() {
     );
     
     const container = document.getElementById('listaCarreras');
+    if (!container) return;
+    
     if (filtered.length === 0) {
         container.innerHTML = '<p class="empty-message">No se encontraron carreras</p>';
         return;
@@ -481,14 +696,20 @@ function filtrarCarreras() {
             </tbody>
         </table>
     `;
+    
+    // Actualizar contador
+    const carreraCount = document.getElementById('carreraCount');
+    if (carreraCount) carreraCount.textContent = filtered.length;
 }
 
 function mostrarFormularioCarrera() {
-    document.getElementById('formCarrera').style.display = 'block';
+    const form = document.getElementById('formCarrera');
+    if (form) form.style.display = 'block';
 }
 
 function ocultarFormularioCarrera() {
-    document.getElementById('formCarrera').style.display = 'none';
+    const form = document.getElementById('formCarrera');
+    if (form) form.style.display = 'none';
     document.getElementById('c_id').value = '';
     document.getElementById('c_nom').value = '';
     document.getElementById('c_des').value = '';
@@ -572,6 +793,8 @@ async function eliminarAdministrador(id) {
 
 function renderAdmins() {
     const container = document.getElementById('listaAdmins');
+    if (!container) return;
+    
     if (db.administradores.length === 0) {
         container.innerHTML = '<p class="empty-message">No hay administradores registrados</p>';
         return;
@@ -611,11 +834,13 @@ function renderAdmins() {
 }
 
 function mostrarFormularioAdmin() {
-    document.getElementById('formAdmin').style.display = 'block';
+    const form = document.getElementById('formAdmin');
+    if (form) form.style.display = 'block';
 }
 
 function ocultarFormularioAdmin() {
-    document.getElementById('formAdmin').style.display = 'none';
+    const form = document.getElementById('formAdmin');
+    if (form) form.style.display = 'none';
     document.getElementById('adm_id').value = '';
     document.getElementById('adm_nom').value = '';
     document.getElementById('adm_correo').value = '';
