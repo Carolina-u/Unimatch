@@ -31,6 +31,8 @@
                     <h2><i class="fas fa-chart-pie"></i> Dashboard de Estadísticas</h2>
                     <button onclick="actualizarDashboard()" class="btn-refresh"><i class="fas fa-sync-alt"></i> Actualizar</button>
                 </div>
+                
+                <!-- KPIs Principales -->
                 <div class="kpi-grid">
                     <div class="kpi-card">
                         <i class="fas fa-university"></i>
@@ -54,6 +56,8 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- Gráficos Principales -->
                 <div class="charts-container">
                     <div class="chart-card">
                         <h3>Distribución por Áreas Vocacionales</h3>
@@ -62,6 +66,46 @@
                     <div class="chart-card">
                         <h3>Top 10 Universidades con más Carreras</h3>
                         <canvas id="chartUnis"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Sección de Estadísticas de Encuestas -->
+                <div class="stats-section">
+                    <h3><i class="fas fa-chart-bar"></i> Estadísticas de Tests Vocacionales</h3>
+                    
+                    <div class="kpi-mini-grid">
+                        <div class="kpi-mini-card">
+                            <i class="fas fa-users"></i>
+                            <div>
+                                <h4>Total Tests</h4>
+                                <span id="totalTests">0</span>
+                            </div>
+                        </div>
+                        <div class="kpi-mini-card">
+                            <i class="fas fa-calendar-week"></i>
+                            <div>
+                                <h4>Tests esta semana</h4>
+                                <span id="testsSemana">0</span>
+                            </div>
+                        </div>
+                        <div class="kpi-mini-card">
+                            <i class="fas fa-chart-line"></i>
+                            <div>
+                                <h4>Promedio diario</h4>
+                                <span id="promedioDiario">0</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container-full">
+                        <canvas id="chartDistribucionAreas"></canvas>
+                    </div>
+                    
+                    <div class="ultimos-tests">
+                        <h4><i class="fas fa-history"></i> Últimos tests realizados</h4>
+                        <div id="ultimosTests" class="table-container">
+                            <p class="empty-message">Cargando datos...</p>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -74,7 +118,7 @@
                 </div>
                 
                 <div id="formUniversidad" class="form-card" style="display:none;">
-                    <h3>Registrar Universidad</h3>
+                    <h3><i class="fas fa-edit"></i> Registrar Universidad</h3>
                     <form onsubmit="guardarUniversidad(event)">
                         <input type="hidden" id="u_id">
                         <div class="form-grid">
@@ -98,7 +142,7 @@
                             </div>
                             <div class="form-group full-width">
                                 <label>Sitio Web</label>
-                                <input type="url" id="u_web" placeholder="https://">
+                                <input type="url" id="u_web" placeholder="https://ejemplo.com">
                             </div>
                             <div class="form-group full-width">
                                 <label>Descripción</label>
@@ -106,15 +150,21 @@
                             </div>
                         </div>
                         <div class="form-actions">
-                            <button type="submit" class="btn-success">Guardar</button>
-                            <button type="button" onclick="ocultarFormularioUniversidad()" class="btn-secondary">Cancelar</button>
+                            <button type="submit" class="btn-success"><i class="fas fa-save"></i> Guardar</button>
+                            <button type="button" onclick="ocultarFormularioUniversidad()" class="btn-secondary"><i class="fas fa-times"></i> Cancelar</button>
                         </div>
                     </form>
                 </div>
 
-                <div class="table-container">
+                <div class="table-wrapper">
                     <div class="table-header">
-                        <input type="text" id="searchUni" placeholder="Buscar universidad..." onkeyup="filtrarUniversidades()">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="searchUni" placeholder="Buscar universidad por nombre o ciudad..." onkeyup="filtrarUniversidades()">
+                        </div>
+                        <div class="table-info">
+                            <span id="uniCount">0</span> universidades encontradas
+                        </div>
                     </div>
                     <div id="listaUnis"></div>
                 </div>
@@ -128,7 +178,7 @@
                 </div>
                 
                 <div id="formCarrera" class="form-card" style="display:none;">
-                    <h3>Registrar Carrera</h3>
+                    <h3><i class="fas fa-graduation-cap"></i> Registrar Carrera</h3>
                     <form onsubmit="guardarCarrera(event)">
                         <input type="hidden" id="c_id">
                         <div class="form-grid">
@@ -154,15 +204,21 @@
                             </div>
                         </div>
                         <div class="form-actions">
-                            <button type="submit" class="btn-success">Guardar</button>
-                            <button type="button" onclick="ocultarFormularioCarrera()" class="btn-secondary">Cancelar</button>
+                            <button type="submit" class="btn-success"><i class="fas fa-save"></i> Guardar</button>
+                            <button type="button" onclick="ocultarFormularioCarrera()" class="btn-secondary"><i class="fas fa-times"></i> Cancelar</button>
                         </div>
                     </form>
                 </div>
 
-                <div class="table-container">
+                <div class="table-wrapper">
                     <div class="table-header">
-                        <input type="text" id="searchCarrera" placeholder="Buscar carrera..." onkeyup="filtrarCarreras()">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="searchCarrera" placeholder="Buscar carrera por nombre o universidad..." onkeyup="filtrarCarreras()">
+                        </div>
+                        <div class="table-info">
+                            <span id="carreraCount">0</span> carreras encontradas
+                        </div>
                     </div>
                     <div id="listaCarreras"></div>
                 </div>
@@ -176,21 +232,21 @@
                 </div>
                 
                 <div id="formAdmin" class="form-card" style="display:none;">
-                    <h3>Registrar Administrador</h3>
+                    <h3><i class="fas fa-user-plus"></i> Registrar Administrador</h3>
                     <form onsubmit="guardarAdministrador(event)">
                         <input type="hidden" id="adm_id">
                         <div class="form-grid">
                             <div class="form-group">
                                 <label>Nombre *</label>
-                                <input type="text" id="adm_nom" required>
+                                <input type="text" id="adm_nom" placeholder="Nombre completo" required>
                             </div>
                             <div class="form-group">
                                 <label>Correo *</label>
-                                <input type="email" id="adm_correo" required>
+                                <input type="email" id="adm_correo" placeholder="correo@ejemplo.com" required>
                             </div>
                             <div class="form-group">
                                 <label>Contraseña *</label>
-                                <input type="password" id="adm_pass" required>
+                                <input type="password" id="adm_pass" placeholder="Mínimo 6 caracteres" required>
                             </div>
                             <div class="form-group">
                                 <label>Rol *</label>
@@ -205,20 +261,34 @@
                             </div>
                         </div>
                         <div class="form-actions">
-                            <button type="submit" class="btn-success">Guardar</button>
-                            <button type="button" onclick="ocultarFormularioAdmin()" class="btn-secondary">Cancelar</button>
+                            <button type="submit" class="btn-success"><i class="fas fa-save"></i> Guardar</button>
+                            <button type="button" onclick="ocultarFormularioAdmin()" class="btn-secondary"><i class="fas fa-times"></i> Cancelar</button>
                         </div>
                     </form>
                 </div>
 
-                <div class="table-container">
+                <div class="table-wrapper">
                     <div id="listaAdmins"></div>
                 </div>
             </section>
         </main>
     </div>
     
+    <!-- Notificaciones -->
     <div id="notification" class="notification" style="display:none;"></div>
+    
+    <!-- Modal de confirmación personalizado (opcional) -->
+    <div id="confirmModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <i class="fas fa-question-circle"></i>
+            <h3>Confirmar acción</h3>
+            <p id="confirmMessage">¿Estás seguro de realizar esta acción?</p>
+            <div class="modal-actions">
+                <button id="confirmYes" class="btn-danger">Sí, eliminar</button>
+                <button id="confirmNo" class="btn-secondary">Cancelar</button>
+            </div>
+        </div>
+    </div>
     
     <script src="PaneldeControl.js"></script>
 </body>
