@@ -870,3 +870,156 @@ textarea:focus-visible {
     outline: 2px solid #c084fc;
     outline-offset: 2px;
 }
+
+/* Botón de Backup */
+.btn-backup {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.btn-backup:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.header-buttons {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+/* Modal de backup */
+.modal-backup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    backdrop-filter: blur(5px);
+}
+
+.modal-backup-content {
+    background: #1a1326;
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    animation: fadeInUp 0.3s ease;
+}
+
+.modal-backup-content i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.modal-backup-content .success-icon {
+    color: #10b981;
+}
+
+.modal-backup-content .error-icon {
+    color: #ef4444;
+}
+
+.modal-backup-content .loading-icon {
+    color: #667eea;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.modal-backup-content h3 {
+    color: white;
+    margin-bottom: 1rem;
+}
+
+.modal-backup-content p {
+    color: #cbd5e1;
+    margin-bottom: 1.5rem;
+}
+
+.modal-backup-content .backup-info {
+    background: #0f0a1a;
+    padding: 1rem;
+    border-radius: 12px;
+    margin: 1rem 0;
+    text-align: left;
+}
+
+.backup-info-item {
+    display: flex;
+    justify-content: space-between;
+    margin: 0.5rem 0;
+    color: #c4b5fd;
+}
+
+.backup-info-item span:first-child {
+    font-weight: 500;
+}
+
+.backup-info-item span:last-child {
+    color: #e9d5ff;
+}
+
+/* Botón de Restaurar Backup */
+.btn-restore {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.btn-restore:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
+/* Input file personalizado */
+input[type="file"] {
+    background: #140d22;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 8px;
+    padding: 0.75rem;
+    color: #f0e7ff;
+    cursor: pointer;
+}
+
+input[type="file"]::file-selector-button {
+    background: #7c6ccf;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-right: 1rem;
+}
+
+input[type="file"]::file-selector-button:hover {
+    background: #9a88f0;
+}
