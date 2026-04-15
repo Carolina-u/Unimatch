@@ -26,12 +26,17 @@
 
         <main>
             <!-- Dashboard Section -->
-            <section id="dashboard" class="active">
+            <section id="dashboard" class="section active">
                 <div class="section-header">
                     <h2><i class="fas fa-chart-pie"></i> Dashboard de Estadísticas</h2>
-                    <button onclick="actualizarDashboard()" class="btn-refresh"><i class="fas fa-sync-alt"></i> Actualizar</button>
+                    <div class="header-buttons">
+                        <button onclick="actualizarDashboard()" class="btn-refresh"><i class="fas fa-sync-alt"></i> Actualizar</button>
+                        <button onclick="generarBackup()" class="btn-backup"><i class="fas fa-database"></i> Generar Backup</button>
+                        <button onclick="mostrarModalRestaurar()" class="btn-restore" id="btnRestore" style="display: none;">
+                            <i class="fas fa-upload"></i> Restaurar Backup
+                        </button>
+                    </div>
                 </div>
-                
                 <!-- KPIs Principales -->
                 <div class="kpi-grid">
                     <div class="kpi-card">
@@ -272,12 +277,40 @@
                 </div>
             </section>
         </main>
+        <!-- Modal de Restauración de Backup -->
+<div id="restoreModal" class="modal" style="display:none;">
+    <div class="modal-content" style="max-width: 500px;">
+        <i class="fas fa-upload" style="color: #f59e0b;"></i>
+        <h3>Restaurar Backup</h3>
+        <p>Selecciona el archivo de backup (.sql) para restaurar la base de datos</p>
+        <p style="font-size: 12px; color: #f87171;">
+            <i class="fas fa-exclamation-triangle"></i> ¡ADVERTENCIA! Esta acción reemplazará los datos actuales.
+        </p>
+        <input type="file" id="backupFileInput" accept=".sql" style="margin: 1rem 0; padding: 0.5rem; background: #140d22; color: white; border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 8px; width: 100%;">
+        <div class="modal-actions">
+            <button onclick="restaurarBackup()" class="btn-primary" style="background: #f59e0b;"><i class="fas fa-check"></i> Restaurar</button>
+            <button onclick="cerrarModalRestaurar()" class="btn-secondary"><i class="fas fa-times"></i> Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de progreso de restauración -->
+<div id="progressModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <i class="fas fa-spinner fa-spin" style="color: #667eea;"></i>
+        <h3>Restaurando Backup...</h3>
+        <p id="progressMessage">Procesando archivo...</p>
+        <div style="background: #140d22; border-radius: 8px; height: 8px; margin: 1rem 0; overflow: hidden;">
+            <div id="progressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #667eea, #a855f7); transition: width 0.3s;"></div>
+        </div>
+    </div>
+</div>
     </div>
     
     <!-- Notificaciones -->
     <div id="notification" class="notification" style="display:none;"></div>
     
-    <!-- Modal de confirmación personalizado (opcional) -->
+    <!-- Modal de confirmación personalizado -->
     <div id="confirmModal" class="modal" style="display:none;">
         <div class="modal-content">
             <i class="fas fa-question-circle"></i>
