@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unimatch - Detalle de Universidad</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+        
+        .uni-detail-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .uni-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 20px;
+            padding: 2rem;
+            color: white;
+            margin-bottom: 2rem;
+        }
+        
+        .uni-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .uni-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .info-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .info-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .info-card i {
+            font-size: 2rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+        
+        .info-card h3 {
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-card p {
+            color: #666;
+        }
+        
+        .info-card a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .info-card a:hover {
+            text-decoration: underline;
+        }
+        
+        .carreras-section {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .carreras-section h2 {
+            color: #333;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .carreras-section h2 i {
+            color: #667eea;
+        }
+        
+        .carrera-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            transition: all 0.3s ease;
+        }
+        
+        .carrera-item:hover {
+            background: #f8f9fa;
+            transform: translateX(5px);
+        }
+        
+        .carrera-info h4 {
+            color: #333;
+            margin-bottom: 0.25rem;
+        }
+        
+        .carrera-info p {
+            color: #666;
+            font-size: 0.85rem;
+        }
+        
+        .carrera-area {
+            background: #667eea;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        
+        .btn-volver {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-volver:hover {
+            background: #764ba2;
+            transform: translateX(-5px);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 3rem;
+        }
+        
+        .loading i {
+            font-size: 2rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+        
+        .error-message {
+            text-align: center;
+            padding: 3rem;
+            color: #f87171;
+        }
+        
+        .error-message i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+        
+        .status.active {
+            background: rgba(59, 191, 139, 0.2);
+            color: #2e9f72;
+            border: 1px solid rgba(59, 191, 139, 0.4);
+        }
+        
+        @media (max-width: 768px) {
+            .uni-detail-container {
+                padding: 0 1rem;
+                margin: 1rem auto;
+            }
+            
+            .uni-header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .carrera-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            
+            .carrera-area {
+                white-space: normal;
+            }
+            
+            .uni-info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="uni-detail-container">
+        <button class="btn-volver" onclick="window.location.href='index.html'">
+            <i class="fas fa-arrow-left"></i> Volver al inicio
+        </button>
+        
+        <div id="uni-content">
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Cargando información de la universidad...</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API = "http://localhost:3000/api";
+        let universidad = null;
+        let carrerasUniversidad = [];
+        
+        // Obtener ID de la URL
+        function getUniversidadId() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id');
+        }
+        
+        // Cargar datos de la universidad
+        async function cargarUniversidad() {
+            const id = getUniversidadId();
+            
+            if (!id) {
+                mostrarError('No se especificó ninguna universidad');
+                return;
+            }
+            
+            try {
+                // Cargar todas las universidades y carreras
+                const [unisRes, carrerasRes] = await Promise.all([
+                    fetch(`${API}/universidades`),
+                    fetch(`${API}/carreras`)
+                ]);
+                
+                const universidades = await unisRes.json();
+                const todasCarreras = await carrerasRes.json();
+                
+                // Buscar la universidad por ID
+                universidad = universidades.find(u => u.id_universidad === parseInt(id));
+                
+                if (!universidad) {
+                    mostrarError('Universidad no encontrada');
+                    return;
+                }
+                
+                // Filtrar carreras de esta universidad
+                carrerasUniversidad = todasCarreras.filter(c => c.id_universidad === parseInt(id));
+                
+                renderizarUniversidad();
+                
+            } catch (error) {
+                console.error('Error cargando universidad:', error);
+                mostrarError('Error al cargar la información de la universidad');
+            }
+        }
+        
+        // Renderizar la página
+        function renderizarUniversidad() {
+            const container = document.getElementById('uni-content');
+            
+            container.innerHTML = `
+                <div class="uni-header">
+                    <h1><i class="fas fa-university"></i> ${escapeHtml(universidad.nombre)}</h1>
+                    <p>${escapeHtml(universidad.descripcion || 'Institución de educación superior comprometida con la excelencia académica y la formación integral de profesionales.')}</p>
+                </div>
+                
+                <div class="uni-info-grid">
+                    <div class="info-card">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <h3>Ubicación</h3>
+                        <p><strong>Ciudad:</strong> ${escapeHtml(universidad.ciudad)}</p>
+                        <p><strong>Departamento:</strong> ${escapeHtml(universidad.departamento)}</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <i class="fas fa-globe"></i>
+                        <h3>Sitio Web</h3>
+                        <p>${universidad.sitio_web ? `<a href="${universidad.sitio_web}" target="_blank">${universidad.sitio_web}</a>` : 'No disponible'}</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <i class="fas fa-book"></i>
+                        <h3>Oferta Académica</h3>
+                        <p><strong>${carrerasUniversidad.length}</strong> carreras disponibles</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <i class="fas fa-chart-line"></i>
+                        <h3>Estado</h3>
+                        <p><span class="status active">Activa</span></p>
+                    </div>
+                </div>
+                
+                <div class="carreras-section">
+                    <h2><i class="fas fa-graduation-cap"></i> Carreras ofrecidas</h2>
+                    ${carrerasUniversidad.length === 0 ? 
+                        '<p style="text-align: center; color: #666;">No hay carreras registradas para esta universidad</p>' :
+                        `<div class="carreras-list">
+                            ${carrerasUniversidad.map(c => `
+                                <div class="carrera-item">
+                                    <div class="carrera-info">
+                                        <h4>${escapeHtml(c.nombre)}</h4>
+                                        <p>${escapeHtml(c.descripcion ? c.descripcion.substring(0, 150) : 'Sin descripción')}${c.descripcion && c.descripcion.length > 150 ? '...' : ''}</p>
+                                    </div>
+                                    <div class="carrera-area">${escapeHtml(c.area_nombre)}</div>
+                                </div>
+                            `).join('')}
+                        </div>`
+                    }
+                </div>
+            `;
+        }
+        
+        function mostrarError(mensaje) {
+            const container = document.getElementById('uni-content');
+            container.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <p>${mensaje}</p>
+                    <button class="btn-volver" onclick="window.location.href='index.html'" style="margin-top: 1rem;">
+                        <i class="fas fa-home"></i> Volver al inicio
+                    </button>
+                </div>
+            `;
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+        
+        // Inicializar
+        cargarUniversidad();
+    </script>
+</body>
+</html>
