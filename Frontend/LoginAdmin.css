@@ -1,240 +1,155 @@
-/* ====== LoginAdmin.css — Dark UI con violetas/mate análogos ====== */
-:root {
-  /* Colores base (modo oscuro) */
-  --bg: #0f0d14;              /* Fondo global */
-  --surface: #16121d;         /* Tarjetas / contenedores */
-  --surface-2: #1c1726;       /* Superficie elevada sutil */
-  --border: #2a2335;          /* Bordes y divisores */
-  --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-
-  /* Tipografía */
-  --text: #e8e3f6;            /* Texto principal */
-  --text-muted: #c9c2da;      /* Etiquetas y ayudas */
-
-  /* Paleta análoga (violetas mate) */
-  --accent: #6c4eb6;          /* Botón / enlaces / foco */
-  --accent-600: #7d5fca;      /* Hover principal */
-  --accent-700: #5c3fa3;      /* Active */
-  --accent-soft: #a88be0;     /* Resaltados sutiles */
-  --accent-ghost: rgba(168, 139, 224, 0.12);
-
-  /* Estado */
-  --error: #ff6b7a;
-  --ring: 0 0 0 3px rgba(108, 78, 182, 0.35);
-
-  /* Métricas */
-  --radius: 16px;
-  --radius-sm: 12px;
-  --gap: 14px;
-  --transition: 160ms ease;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-/* Reset suave + tipografía */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-html, body {
-  height: 100%;
-}
 body {
-  margin: 0;
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
-    Helvetica Neue, Arial, "Noto Sans", "Liberation Sans", sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji";
-  background: radial-gradient(1200px 800px at 20% -10%, #151021 0%, var(--bg) 55%) no-repeat,
-              var(--bg);
-  color: var(--text);
-  line-height: 1.4;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  display: grid;
-  place-items: center;
-  padding: 24px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #0f0c1f 0%, #1a0933 50%, #2d0b3a 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* Contenedor del login */
 .login-container {
-  width: 100%;
-  max-width: 420px;
-  background: linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  border-radius: var(--radius);
-  padding: 28px;
-  position: relative;
-  overflow: hidden;
+    width: 100%;
+    max-width: 400px;
+    padding: 1rem;
 }
 
-/* Decoración sutil de acento (no pesada) */
-.login-container::before {
-  content: "";
-  position: absolute;
-  inset: -30% -20% auto auto;
-  width: 380px;
-  height: 260px;
-  background: radial-gradient(closest-side, var(--accent-ghost), transparent 70%);
-  filter: blur(6px);
-  pointer-events: none;
+.login-box {
+    background: rgba(18, 12, 28, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5), 0 0 0 1px rgba(157, 78, 221, 0.3);
+    animation: fadeInUp 0.5s ease;
 }
 
-/* Título */
-.login-container h2 {
-  margin: 0 0 18px 0;
-  font-size: 1.4rem;
-  letter-spacing: 0.2px;
-  color: #efeaff; /* un toque más claro que var(--text) para jerarquía */
-  text-shadow: 0 1px 0 rgba(0,0,0,0.25);
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-/* Formulario */
-#loginForm {
-  display: grid;
-  gap: var(--gap);
+.login-header {
+    text-align: center;
+    margin-bottom: 2rem;
 }
 
-/* Etiquetas */
-#loginForm label {
-  font-size: 0.92rem;
-  color: var(--text-muted);
-  display: block;
-  margin-bottom: 6px;
+.login-header i {
+    font-size: 3rem;
+    background: linear-gradient(135deg, #c084fc 0%, #a855f7 50%, #7c3aed 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.5));
 }
 
-/* Inputs */
-#loginForm input[type="email"],
-#loginForm input[type="password"] {
-  width: 100%;
-  padding: 12px 14px;
-  background: #120e1a;
-  color: var(--text);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  outline: none;
-  transition: border-color var(--transition), box-shadow var(--transition), background var(--transition), transform var(--transition);
+.login-header h2 {
+    background: linear-gradient(135deg, #e9d5ff 0%, #c084fc 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 0.5rem;
+    font-size: 1.8rem;
+    font-weight: 700;
 }
 
-/* Placeholder sutil */
-#loginForm input::placeholder {
-  color: #9b93b3;
+.login-header p {
+    color: #a78bfa;
+    font-size: 0.9rem;
 }
 
-/* Focus & valid/invalid */
-#loginForm input:focus {
-  border-color: var(--accent);
-  box-shadow: var(--ring);
-  background: #151022;
-}
-#loginForm input:user-invalid {
-  border-color: var(--error);
-}
-#loginForm input:user-invalid:focus {
-  box-shadow: 0 0 0 3px rgba(255, 107, 122, 0.35);
+.form-group {
+    margin-bottom: 1.5rem;
 }
 
-/* Botón primario */
-#loginForm button[type="submit"] {
-  margin-top: 10px;
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  background: linear-gradient(180deg, var(--accent) 0%, var(--accent-700) 100%);
-  color: white;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-  cursor: pointer;
-  transition: transform var(--transition), filter var(--transition), box-shadow var(--transition), background var(--transition);
-  box-shadow: 0 6px 20px rgba(108, 78, 182, 0.25);
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #d8b4fe;
+    font-weight: 500;
+    letter-spacing: 0.5px;
 }
 
-#loginForm button[type="submit"]:hover {
-  background: linear-gradient(180deg, var(--accent-600) 0%, var(--accent) 100%);
-  transform: translateY(-1px);
-  filter: brightness(1.02);
+.form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    background: rgba(30, 20, 45, 0.8);
+    border: 2px solid rgba(139, 92, 246, 0.3);
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    color: #f0e7ff;
 }
 
-#loginForm button[type="submit"]:active {
-  transform: translateY(0);
-  filter: brightness(0.98);
+.form-group input:focus {
+    outline: none;
+    border-color: #a855f7;
+    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.3), 0 0 0 5px rgba(168, 85, 247, 0.1);
+    background: rgba(30, 20, 45, 0.95);
 }
 
-#loginForm button[type="submit"]:focus-visible {
-  outline: none;
-  box-shadow: var(--ring), 0 6px 20px rgba(108, 78, 182, 0.25);
+.btn-login {
+    width: 100%;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, #a855f7 0%, #7c3aed 50%, #5b21b6 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
-/* Separadores sutiles entre grupos (si agregas más campos) */
-.field-group {
-  display: grid;
-  gap: 6px;
+.btn-login:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(135deg, #c084fc 0%, #a855f7 50%, #7c3aed 100%);
+    box-shadow: 0 5px 20px rgba(168, 85, 247, 0.4);
 }
 
-/* Ayudas / mensajes de error opcionales */
-.help-text {
-  font-size: 0.85rem;
-  color: var(--text-muted);
-}
-.error-text {
-  font-size: 0.88rem;
-  color: var(--error);
+.btn-login:active {
+    transform: translateY(0);
 }
 
-/* Accesibilidad: reducción de movimiento */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation: none !important;
-    transition: none !important;
-    scroll-behavior: auto !important;
-  }
+.form-group input::placeholder {
+    color: rgba(168, 139, 207, 0.6);
 }
 
-/* Responsivo */
-@media (max-width: 420px) {
-  .login-container {
-    padding: 22px;
-    border-radius: 14px;
-  }
-  .login-container h2 {
-    font-size: 1.25rem;
-  }
+/* Efecto de brillo adicional para inputs */
+.form-group input:hover {
+    border-color: rgba(139, 92, 246, 0.6);
 }
 
-/* Estado deshabilitado (por si lo usas desde JS) */
-button[disabled],
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  box-shadow: none;
+/* Mejora visual para el contenedor */
+.login-box::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(135deg, #a855f7, #7c3aed, #5b21b6);
+    border-radius: 18px;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
-/* Enlaces (si los agregas, por ejemplo "olvidé mi contraseña") */
-a {
-  color: var(--accent-soft);
-  text-decoration: none;
-  transition: color var(--transition);
-}
-a:hover {
-  color: var(--accent-600);
-}
-
-/* Sutil borde superior decorativo al contenedor */
-.login-container::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 8%;
-  right: 8%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(168, 139, 224, 0.35), transparent);
-  pointer-events: none;
-}
-
-/* Opcional: sombra interior muy leve para profundidad */
-.login-container {
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.02),
-    var(--shadow);
+.login-box:hover::before {
+    opacity: 0.3;
 }
