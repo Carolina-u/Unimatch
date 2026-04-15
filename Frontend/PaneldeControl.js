@@ -196,7 +196,6 @@ async function cargarEstadisticasEncuestas() {
     try {
         const headers = { "Authorization": token };
         
-        // Obtener distribución de áreas
         const resDistribucion = await fetch(`${API}/admin/encuesta/distribucion-areas`, { headers });
         
         if (!resDistribucion.ok) {
@@ -205,19 +204,15 @@ async function cargarEstadisticasEncuestas() {
         
         const distribucion = await resDistribucion.json();
         
-        // Total de tests
         const totalTests = distribucion.reduce((sum, item) => sum + (item.total_tests || 0), 0);
         const totalTestsElem = document.getElementById('totalTests');
         if (totalTestsElem) totalTestsElem.textContent = totalTests;
         
-        // Si no hay tests, mostrar mensaje amigable
         if (totalTests === 0) {
             const container = document.getElementById('ultimosTests');
             if (container) {
                 container.innerHTML = '<p class="empty-message">📝 Aún no hay tests realizados. Cuando los usuarios completen el test vocacional, los resultados aparecerán aquí.</p>';
             }
-            
-            // No mostrar gráfico vacío
             const ctxDistribucion = document.getElementById('chartDistribucionAreas');
             if (ctxDistribucion && window.myChartDistribucion) {
                 window.myChartDistribucion.destroy();
@@ -225,18 +220,15 @@ async function cargarEstadisticasEncuestas() {
             return;
         }
         
-        // Calcular tests de esta semana y promedio diario
         const resStats = await fetch(`${API}/admin/encuesta/stats`, { headers });
         const statsDiarios = await resStats.json() || [];
         
-        // Promedio diario
         const promedioDiario = statsDiarios.length > 0 
             ? (statsDiarios.reduce((sum, d) => sum + d.cantidad, 0) / statsDiarios.length).toFixed(1)
             : 0;
         const promedioElem = document.getElementById('promedioDiario');
         if (promedioElem) promedioElem.textContent = promedioDiario;
         
-        // Tests esta semana
         const hoy = new Date();
         const inicioSemana = new Date(hoy);
         inicioSemana.setDate(hoy.getDate() - hoy.getDay());
@@ -248,7 +240,6 @@ async function cargarEstadisticasEncuestas() {
         const testsSemanaElem = document.getElementById('testsSemana');
         if (testsSemanaElem) testsSemanaElem.textContent = testsSemana;
         
-        // Gráfico de distribución de áreas
         const ctxDistribucion = document.getElementById('chartDistribucionAreas');
         if (ctxDistribucion) {
             const ctx = ctxDistribucion.getContext('2d');
@@ -270,9 +261,7 @@ async function cargarEstadisticasEncuestas() {
                     responsive: true,
                     maintainAspectRatio: true,
                     plugins: {
-                        legend: { 
-                            labels: { color: '#e2e8f0' } 
-                        },
+                        legend: { labels: { color: '#e2e8f0' } },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
@@ -284,20 +273,13 @@ async function cargarEstadisticasEncuestas() {
                         }
                     },
                     scales: {
-                        y: { 
-                            ticks: { color: '#e2e8f0', stepSize: 1 },
-                            grid: { color: '#334155' }
-                        },
-                        x: { 
-                            ticks: { color: '#e2e8f0' },
-                            grid: { display: false }
-                        }
+                        y: { ticks: { color: '#e2e8f0', stepSize: 1 }, grid: { color: '#334155' } },
+                        x: { ticks: { color: '#e2e8f0' }, grid: { display: false } }
                     }
                 }
             });
         }
         
-        // Últimos tests
         const resUltimos = await fetch(`${API}/admin/encuesta/ultimas`, { headers });
         const ultimosTests = await resUltimos.json();
         
@@ -309,22 +291,17 @@ async function cargarEstadisticasEncuestas() {
                 container.innerHTML = `
                     <table class="data-table">
                         <thead>
-                            <tr>
-                                <th>Fecha</th>
-                                <th>Área Recomendada</th>
-                                <th>Universidad Sugerida</th>
-                            </thead>
-                            <tbody>
-                                ${ultimosTests.map(test => `
-                                    <tr>
-                                        <td>${test.fecha ? new Date(test.fecha).toLocaleString('es-CO') : 'Fecha no disponible'}</td>
-                                        <td><span class="badge-area">${test.area_resultado || 'N/A'}</span></td>
-                                        <td>${test.universidad_recomendada || 'Por definir'}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    `;
+                            <tr><th>Fecha</th><th>Área Recomendada</th><th>Universidad Sugerida</th></tr>
+                        </thead>
+                        <tbody>
+                            ${ultimosTests.map(test => `
+                                <tr><td>${test.fecha ? new Date(test.fecha).toLocaleString('es-CO') : 'Fecha no disponible'}</td>
+                                <td><span class="badge-area">${test.area_resultado || 'N/A'}</span></td>
+                                <td>${test.universidad_recomendada || 'Por definir'}</td></tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
             }
         }
         
@@ -337,7 +314,7 @@ async function cargarEstadisticasEncuestas() {
     }
 }
 
-// CRUD Universidades
+// ==================== CRUD UNIVERSIDADES ====================
 async function guardarUniversidad(e) {
     e.preventDefault();
     const id = document.getElementById('u_id').value;
@@ -356,10 +333,7 @@ async function guardarUniversidad(e) {
         
         const res = await fetch(url, {
             method: method,
-            headers: { 
-                'Content-Type': 'application/json', 
-                'Authorization': token 
-            },
+            headers: { 'Content-Type': 'application/json', 'Authorization': token },
             body: JSON.stringify(data)
         });
         
@@ -424,16 +398,7 @@ function renderUnis() {
     
     container.innerHTML = `
         <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Ciudad</th>
-                    <th>Departamento</th>
-                    <th>Estado</th>
-                    <th>Sitio Web</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
+            <thead><tr><th>Nombre</th><th>Ciudad</th><th>Departamento</th><th>Estado</th><th>Sitio Web</th><th>Acciones</th></tr></thead>
             <tbody>
                 ${db.universidad.map(u => `
                     <tr>
@@ -443,12 +408,8 @@ function renderUnis() {
                         <td>${escapeHtml(u.estado_nombre)}</td>
                         <td>${u.sitio_web ? `<a href="${u.sitio_web}" target="_blank">Visitar</a>` : '-'}</td>
                         <td>
-                            <button onclick="editarUniversidad(${u.id_universidad})" class="btn-edit">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button onclick="eliminarUniversidad(${u.id_universidad})" class="btn-delete">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                            <button onclick="editarUniversidad(${u.id_universidad})" class="btn-edit"><i class="fas fa-edit"></i></button>
+                            <button onclick="eliminarUniversidad(${u.id_universidad})" class="btn-delete"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>
                 `).join('')}
@@ -456,17 +417,13 @@ function renderUnis() {
         </table>
     `;
     
-    // Actualizar contador
     const uniCount = document.getElementById('uniCount');
     if (uniCount) uniCount.textContent = db.universidad.length;
 }
 
 function filtrarUniversidades() {
     const search = document.getElementById('searchUni').value.toLowerCase();
-    const filtered = db.universidad.filter(u => 
-        u.nombre.toLowerCase().includes(search) || 
-        u.ciudad.toLowerCase().includes(search)
-    );
+    const filtered = db.universidad.filter(u => u.nombre.toLowerCase().includes(search) || u.ciudad.toLowerCase().includes(search));
     
     const container = document.getElementById('listaUnis');
     if (!container) return;
@@ -478,16 +435,7 @@ function filtrarUniversidades() {
     
     container.innerHTML = `
         <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Ciudad</th>
-                    <th>Departamento</th>
-                    <th>Estado</th>
-                    <th>Sitio Web</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
+            <thead><tr><th>Nombre</th><th>Ciudad</th><th>Departamento</th><th>Estado</th><th>Sitio Web</th><th>Acciones</th></tr></thead>
             <tbody>
                 ${filtered.map(u => `
                     <tr>
@@ -497,12 +445,8 @@ function filtrarUniversidades() {
                         <td>${escapeHtml(u.estado_nombre)}</td>
                         <td>${u.sitio_web ? `<a href="${u.sitio_web}" target="_blank">Visitar</a>` : '-'}</td>
                         <td>
-                            <button onclick="editarUniversidad(${u.id_universidad})" class="btn-edit">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button onclick="eliminarUniversidad(${u.id_universidad})" class="btn-delete">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                            <button onclick="editarUniversidad(${u.id_universidad})" class="btn-edit"><i class="fas fa-edit"></i></button>
+                            <button onclick="eliminarUniversidad(${u.id_universidad})" class="btn-delete"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>
                 `).join('')}
@@ -510,7 +454,6 @@ function filtrarUniversidades() {
         </table>
     `;
     
-    // Actualizar contador
     const uniCount = document.getElementById('uniCount');
     if (uniCount) uniCount.textContent = filtered.length;
 }
@@ -532,7 +475,7 @@ function ocultarFormularioUniversidad() {
     document.getElementById('u_des').value = '';
 }
 
-// CRUD Carreras
+// ==================== CRUD CARRERAS ====================
 async function guardarCarrera(e) {
     e.preventDefault();
     const id = document.getElementById('c_id').value;
@@ -549,10 +492,7 @@ async function guardarCarrera(e) {
         
         const res = await fetch(url, {
             method: method,
-            headers: { 
-                'Content-Type': 'application/json', 
-                'Authorization': token 
-            },
+            headers: { 'Content-Type': 'application/json', 'Authorization': token },
             body: JSON.stringify(data)
         });
         
@@ -615,15 +555,7 @@ function renderCarreras() {
     
     container.innerHTML = `
         <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Área</th>
-                    <th>Universidad</th>
-                    <th>Descripción</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
+            <thead><tr><th>Nombre</th><th>Área</th><th>Universidad</th><th>Descripción</th><th>Acciones</th></tr></thead>
             <tbody>
                 ${db.carrera.map(c => `
                     <tr>
@@ -632,12 +564,8 @@ function renderCarreras() {
                         <td>${escapeHtml(c.universidad_nombre)}</td>
                         <td>${escapeHtml(c.descripcion ? c.descripcion.substring(0, 100) : '-')}${c.descripcion && c.descripcion.length > 100 ? '...' : ''}</td>
                         <td>
-                            <button onclick="editarCarrera(${c.id_carrera})" class="btn-edit">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button onclick="eliminarCarrera(${c.id_carrera})" class="btn-delete">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                            <button onclick="editarCarrera(${c.id_carrera})" class="btn-edit"><i class="fas fa-edit"></i></button>
+                            <button onclick="eliminarCarrera(${c.id_carrera})" class="btn-delete"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>
                 `).join('')}
@@ -645,17 +573,13 @@ function renderCarreras() {
         </table>
     `;
     
-    // Actualizar contador
     const carreraCount = document.getElementById('carreraCount');
     if (carreraCount) carreraCount.textContent = db.carrera.length;
 }
 
 function filtrarCarreras() {
     const search = document.getElementById('searchCarrera').value.toLowerCase();
-    const filtered = db.carrera.filter(c => 
-        c.nombre.toLowerCase().includes(search) || 
-        c.universidad_nombre.toLowerCase().includes(search)
-    );
+    const filtered = db.carrera.filter(c => c.nombre.toLowerCase().includes(search) || c.universidad_nombre.toLowerCase().includes(search));
     
     const container = document.getElementById('listaCarreras');
     if (!container) return;
@@ -667,15 +591,7 @@ function filtrarCarreras() {
     
     container.innerHTML = `
         <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Área</th>
-                    <th>Universidad</th>
-                    <th>Descripción</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
+            <thead><tr><th>Nombre</th><th>Área</th><th>Universidad</th><th>Descripción</th><th>Acciones</th></tr></thead>
             <tbody>
                 ${filtered.map(c => `
                     <tr>
@@ -684,12 +600,8 @@ function filtrarCarreras() {
                         <td>${escapeHtml(c.universidad_nombre)}</td>
                         <td>${escapeHtml(c.descripcion ? c.descripcion.substring(0, 100) : '-')}${c.descripcion && c.descripcion.length > 100 ? '...' : ''}</td>
                         <td>
-                            <button onclick="editarCarrera(${c.id_carrera})" class="btn-edit">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button onclick="eliminarCarrera(${c.id_carrera})" class="btn-delete">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                            <button onclick="editarCarrera(${c.id_carrera})" class="btn-edit"><i class="fas fa-edit"></i></button>
+                            <button onclick="eliminarCarrera(${c.id_carrera})" class="btn-delete"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>
                 `).join('')}
@@ -697,7 +609,6 @@ function filtrarCarreras() {
         </table>
     `;
     
-    // Actualizar contador
     const carreraCount = document.getElementById('carreraCount');
     if (carreraCount) carreraCount.textContent = filtered.length;
 }
@@ -717,7 +628,7 @@ function ocultarFormularioCarrera() {
     document.getElementById('c_uni').value = '';
 }
 
-// CRUD Administradores
+// ==================== CRUD ADMINISTRADORES ====================
 async function guardarAdministrador(e) {
     e.preventDefault();
     const id = document.getElementById('adm_id').value;
@@ -735,10 +646,7 @@ async function guardarAdministrador(e) {
         
         const res = await fetch(url, {
             method: method,
-            headers: { 
-                'Content-Type': 'application/json', 
-                'Authorization': token 
-            },
+            headers: { 'Content-Type': 'application/json', 'Authorization': token },
             body: JSON.stringify(data)
         });
         
@@ -802,15 +710,7 @@ function renderAdmins() {
     
     container.innerHTML = `
         <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Correo</th>
-                    <th>Rol</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
+            <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead>
             <tbody>
                 ${db.administradores.map(a => `
                     <tr>
@@ -819,12 +719,8 @@ function renderAdmins() {
                         <td>${escapeHtml(a.rol_nombre)}</td>
                         <td><span class="status ${a.activo ? 'active' : 'inactive'}">${a.activo ? 'Activo' : 'Inactivo'}</span></td>
                         <td>
-                            <button onclick="editarAdministrador(${a.id_administrador})" class="btn-edit">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button onclick="eliminarAdministrador(${a.id_administrador})" class="btn-delete">
-                                <i class="fas fa-trash"></i>
-                            </button>
+                            <button onclick="editarAdministrador(${a.id_administrador})" class="btn-edit"><i class="fas fa-edit"></i></button>
+                            <button onclick="eliminarAdministrador(${a.id_administrador})" class="btn-delete"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>
                 `).join('')}
@@ -849,7 +745,105 @@ function ocultarFormularioAdmin() {
     document.getElementById('adm_activo').value = '1';
 }
 
-// Utilidades
+// ==================== BACKUP ====================
+async function generarBackup() {
+    const modalHTML = `
+        <div id="backupModal" class="modal-backup">
+            <div class="modal-backup-content">
+                <i class="fas fa-spinner fa-spin loading-icon"></i>
+                <h3>Generando Backup</h3>
+                <p>Por favor espera, estamos preparando el respaldo de la base de datos...</p>
+                <div class="backup-info">
+                    <div class="backup-info-item">
+                        <span>📊 Progreso:</span>
+                        <span id="backupProgress">Conectando...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    try {
+        document.getElementById('backupProgress').textContent = 'Obteniendo información de la base de datos...';
+        
+        const infoRes = await fetch(`${API}/admin/backup-info`, {
+            headers: { 'Authorization': token }
+        });
+        const infoData = await infoRes.json();
+        
+        document.getElementById('backupProgress').innerHTML = `📋 Preparando ${Object.keys(infoData.tablas).length} tablas con ${infoData.total_registros} registros...`;
+        
+        const backupRes = await fetch(`${API}/admin/backup`, {
+            headers: { 'Authorization': token }
+        });
+        
+        if (!backupRes.ok) {
+            throw new Error('Error al generar el backup');
+        }
+        
+        const blob = await backupRes.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        
+        const fecha = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+        a.download = `unimatch_backup_${fecha}.sql`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        const modal = document.getElementById('backupModal');
+        modal.innerHTML = `
+            <div class="modal-backup-content">
+                <i class="fas fa-check-circle success-icon"></i>
+                <h3>✅ Backup Completado</h3>
+                <p>El respaldo se ha generado exitosamente.</p>
+                <div class="backup-info">
+                    <div class="backup-info-item"><span>Fecha:</span><span>${new Date().toLocaleString('es-CO')}</span></div>
+                    <div class="backup-info-item"><span>Tablas:</span><span>${Object.keys(infoData.tablas).length}</span></div>
+                    <div class="backup-info-item"><span>Registros:</span><span>${infoData.total_registros}</span></div>
+                    <div class="backup-info-item"><span>Tamaño:</span><span>${(blob.size / 1024).toFixed(2)} KB</span></div>
+                </div>
+                <button onclick="cerrarModalBackup()" class="btn-primary" style="margin-top: 1rem;"><i class="fas fa-check"></i> Cerrar</button>
+            </div>
+        `;
+        
+        mostrarNotificacion('Backup generado exitosamente', 'success');
+        
+        setTimeout(() => { cerrarModalBackup(); }, 5000);
+        
+    } catch (error) {
+        console.error('Error generando backup:', error);
+        const modal = document.getElementById('backupModal');
+        modal.innerHTML = `
+            <div class="modal-backup-content">
+                <i class="fas fa-exclamation-circle error-icon"></i>
+                <h3>❌ Error al generar Backup</h3>
+                <p>${error.message || 'Hubo un problema al generar el respaldo'}</p>
+                <button onclick="cerrarModalBackup()" class="btn-primary" style="margin-top: 1rem;"><i class="fas fa-times"></i> Cerrar</button>
+            </div>
+        `;
+        mostrarNotificacion('Error al generar backup', 'error');
+    }
+}
+
+function cerrarModalBackup() {
+    const modal = document.getElementById('backupModal');
+    if (modal) modal.remove();
+}
+
+function verificarPermisosBackup() {
+    const rol = localStorage.getItem('rol');
+    const btnBackup = document.getElementById('btnBackup');
+    if (btnBackup && rol === '1') {
+        btnBackup.style.display = 'inline-flex';
+    }
+}
+
+// ==================== UTILIDADES ====================
 function escapeHtml(str) {
     if (!str) return '';
     return str
@@ -866,9 +860,122 @@ function cerrarSesion() {
         location.href = "loginAdmin.html";
     }
 }
+// ==================== RESTAURACIÓN DE BACKUP ====================
 
-// Inicialización
+function mostrarModalRestaurar() {
+    document.getElementById('restoreModal').style.display = 'flex';
+}
+
+function cerrarModalRestaurar() {
+    document.getElementById('restoreModal').style.display = 'none';
+    document.getElementById('backupFileInput').value = '';
+}
+
+function cerrarProgressModal() {
+    const modal = document.getElementById('progressModal');
+    if (modal) modal.style.display = 'none';
+}
+
+async function restaurarBackup() {
+    const fileInput = document.getElementById('backupFileInput');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        mostrarNotificacion('Por favor selecciona un archivo de backup', 'error');
+        return;
+    }
+    
+    if (!file.name.endsWith('.sql')) {
+        mostrarNotificacion('El archivo debe tener extensión .sql', 'error');
+        return;
+    }
+    
+    // Confirmar con el usuario
+    if (!confirm('⚠️ ¡ADVERTENCIA! Esta acción reemplazará todos los datos actuales. ¿Estás seguro de continuar?')) {
+        return;
+    }
+    
+    // Cerrar modal de selección y abrir modal de progreso
+    cerrarModalRestaurar();
+    
+    const progressModal = document.getElementById('progressModal');
+    const progressBar = document.getElementById('progressBar');
+    const progressMessage = document.getElementById('progressMessage');
+    
+    progressModal.style.display = 'flex';
+    progressBar.style.width = '30%';
+    progressMessage.textContent = 'Subiendo archivo...';
+    
+    // Crear FormData para enviar el archivo
+    const formData = new FormData();
+    formData.append('backupFile', file);
+    
+    try {
+        progressBar.style.width = '60%';
+        progressMessage.textContent = 'Restaurando base de datos...';
+        
+        const response = await fetch(`${API}/admin/restaurar-backup`, {
+            method: 'POST',
+            headers: {
+                'Authorization': token
+            },
+            body: formData
+        });
+        
+        progressBar.style.width = '90%';
+        progressMessage.textContent = 'Finalizando...';
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            progressBar.style.width = '100%';
+            progressMessage.innerHTML = `
+                <i class="fas fa-check-circle" style="color: #10b981; font-size: 2rem;"></i><br>
+                ${result.mensaje}<br>
+                📊 Tablas restauradas: ${result.tablas_restauradas.length}<br>
+                📝 Consultas ejecutadas: ${result.total_consultas}
+            `;
+            
+            mostrarNotificacion('Backup restaurado exitosamente', 'success');
+            
+            // Recargar datos del dashboard después de 2 segundos
+            setTimeout(() => {
+                cerrarProgressModal();
+                loadData();
+                initDashboard();
+            }, 2000);
+        } else {
+            throw new Error(result.mensaje || 'Error al restaurar');
+        }
+    } catch (error) {
+        console.error('Error restaurando backup:', error);
+        progressMessage.innerHTML = `
+            <i class="fas fa-exclamation-circle" style="color: #ef4444; font-size: 2rem;"></i><br>
+            ❌ Error al restaurar: ${error.message}
+        `;
+        mostrarNotificacion('Error al restaurar backup', 'error');
+        
+        setTimeout(() => {
+            cerrarProgressModal();
+        }, 3000);
+    }
+}
+
+// Modificar la función verificarPermisosBackup para incluir el botón de restaurar
+function verificarPermisosBackup() {
+    const rol = localStorage.getItem('rol');
+    const btnBackup = document.getElementById('btnBackup');
+    const btnRestore = document.getElementById('btnRestore');
+    
+    if (rol === '1') {
+        if (btnBackup) btnBackup.style.display = 'inline-flex';
+        if (btnRestore) btnRestore.style.display = 'inline-flex';
+    }
+}
+
+// ==================== INICIALIZACIÓN ====================
 window.onload = async () => {
     await loadData();
     mostrarSeccion('dashboard');
+    verificarPermisosBackup();
 };
