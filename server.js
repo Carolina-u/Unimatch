@@ -3,15 +3,18 @@ const express = require("express");
 const mysql = require("mysql2");
 const bcrypt = require("bcrypt");
 const cors = require("cors");
+const fileUpload = require('express-fileupload');
+
 
 const app = express();
 app.use(express.json());
 app.use(cors());
+app.use(fileUpload());
 
 const db = mysql.createPool({
     host: "localhost",
     user: "root",
-    password: "729004",
+    password: "******",
     database: "Unimatch",
     waitForConnections: true,
     connectionLimit: 10
@@ -19,7 +22,7 @@ const db = mysql.createPool({
 
 const SECRET_KEY = "unimatch_key";
 
-// Middleware para verificar token
+// middleware para verificar token
 const verificarToken = (req, res, next) => {
     const token = req.headers['authorization'];
     if (!token) return res.status(403).json({ mensaje: "Token requerido" });
@@ -31,7 +34,7 @@ const verificarToken = (req, res, next) => {
     });
 };
 
-// Middleware para verificar si es superadmin (rol 1)
+// middleware para verificar si es superadmin (rol 1)
 const verificarSuperAdmin = (req, res, next) => {
     if (req.rolId !== 1) {
         return res.status(403).json({ mensaje: "Acceso denegado. Se requieren permisos de superadmin." });
@@ -39,7 +42,7 @@ const verificarSuperAdmin = (req, res, next) => {
     next();
 };
 
-/* ==================== AUTH ==================== */
+/* AUTH*/
 app.post("/api/login-admin", (req, res) => {
     const { correo, contrasena } = req.body;
     db.query("SELECT * FROM administrador WHERE correo = ? AND activo = 1", [correo], async (err, result) => {
@@ -63,7 +66,7 @@ app.post("/api/login-admin", (req, res) => {
     });
 });
 
-/* ==================== DATOS MAESTROS ==================== */
+/* DATOS IMPORTANTES */
 app.get("/api/estado-universidad", (req, res) => {
     db.query("SELECT * FROM estado_universidad", (err, resu) => {
         if (err) return res.status(500).json({ error: err });
@@ -78,7 +81,7 @@ app.get("/api/areas", (req, res) => {
     });
 });
 
-/* ==================== CRUD UNIVERSIDADES ==================== */
+/*  CRUD UNIVERSIDADES  */
 app.get("/api/universidades", (req, res) => {
     db.query(`
         SELECT u.*, e.nombre as estado_nombre 
@@ -118,7 +121,7 @@ app.put("/api/admin/universidades/:id", verificarToken, (req, res) => {
 });
 
 app.delete("/api/admin/universidades/:id", verificarToken, (req, res) => {
-    // Verificar si tiene carreras asociadas
+    // verificar si tiene carreras asociadas
     db.query("SELECT COUNT(*) as count FROM carrera WHERE id_universidad = ?", [req.params.id], (err, result) => {
         if (err) return res.status(500).json({ error: err });
         if (result[0].count > 0) {
@@ -132,7 +135,7 @@ app.delete("/api/admin/universidades/:id", verificarToken, (req, res) => {
     });
 });
 
-/* ==================== CRUD CARRERAS ==================== */
+/* =CRUD CARRERAS  */
 app.get("/api/carreras", (req, res) => {
     db.query(`
         SELECT c.*, u.nombre as universidad_nombre, a.nombre as area_nombre 
@@ -181,7 +184,7 @@ app.delete("/api/admin/carreras/:id", verificarToken, (req, res) => {
     });
 });
 
-/* ==================== ESTADÍSTICAS DASHBOARD ==================== */
+/* == ESTADÍSTICAS DASHBOARD == */
 app.get("/api/admin/stats-counts", verificarToken, (req, res) => {
     const sql = `
         SELECT 
@@ -224,7 +227,7 @@ app.get("/api/admin/stats-universidades", verificarToken, (req, res) => {
     });
 });
 
-/* ==================== CRUD ADMINISTRADORES ==================== */
+/* = CRUD ADMINISTRADORES == */
 app.get("/api/administradores", verificarToken, (req, res) => {
     db.query(`
         SELECT a.id_administrador, a.nombre, a.correo, a.activo, r.nombre as rol_nombre
@@ -285,18 +288,17 @@ app.delete("/api/admin/administradores/:id", verificarToken, verificarSuperAdmin
     });
 });
 
-/* ==================== ROLES ==================== */
+/* ROLES*/
 app.get("/api/roles", verificarToken, (req, res) => {
     db.query("SELECT * FROM rol_administrador", (err, resu) => {
         if (err) return res.status(500).json({ error: err });
         res.json(resu);
     });
 });
-// ... (todo tu código anterior está bien hasta aquí)
 
-/* ==================== ENCUESTA VOCACIONAL ==================== */
+/* ENCUESTA VOCACIONAL  */
 
-// Obtener todas las preguntas con sus opciones
+// obtener todas las preguntas con sus opciones
 app.get("/api/encuesta/preguntas", (req, res) => {
     const sql = `
         SELECT 
@@ -324,7 +326,7 @@ app.get("/api/encuesta/preguntas", (req, res) => {
             return res.status(500).json({ error: err.message });
         }
         
-        // Parsear JSON de opciones
+        // parseo JSON de opciones
         const preguntas = results.map(p => {
             let opciones = [];
             try {
@@ -343,12 +345,12 @@ app.get("/api/encuesta/preguntas", (req, res) => {
             };
         });
         
-        console.log(`✅ Enviando ${preguntas.length} preguntas con opciones`);
+        console.log(`Enviando ${preguntas.length} preguntas con opciones`);
         res.json(preguntas);
     });
 });
 
-// Ruta para obtener puntajes de una opción (necesaria para calcular resultados)
+// ruta para obtener puntajes de una opción (es para calcular resultados)
 app.get("/api/opcion-puntajes/:id_opcion", (req, res) => {
     const sql = `
         SELECT oa.id_area, a.nombre as area_nombre, oa.puntaje
@@ -366,16 +368,16 @@ app.get("/api/opcion-puntajes/:id_opcion", (req, res) => {
     });
 });
 
-// Guardar resultado de encuesta (para usuarios no logueados)
+// guardar resultado de encuesta (para usuarios no logueados)
 app.post("/api/encuesta/resultado", (req, res) => {
     const { respuestas, area_principal, puntajes_completos } = req.body;
     
-    // Validar datos
+    // validar los datos
     if (!respuestas || !area_principal || !puntajes_completos) {
         return res.status(400).json({ mensaje: "Faltan datos requeridos" });
     }
     
-    // 1. Guardar resultado principal
+    // 1. guardar resultado principal
     const sqlResultado = `
         INSERT INTO resultado_encuesta 
         (fecha, id_area_resultado, id_universidad_recomendada) 
@@ -390,7 +392,7 @@ app.post("/api/encuesta/resultado", (req, res) => {
         
         const id_resultado = result.insertId;
         
-        // 2. Recomendar universidades basadas en el área principal
+        // 2.recomendar universidades basadas en el area principal
         const sqlRecomendaciones = `
             SELECT DISTINCT u.id_universidad, u.nombre, u.ciudad, u.departamento, 
                    u.sitio_web, u.descripcion,
@@ -429,7 +431,7 @@ app.post("/api/encuesta/resultado", (req, res) => {
     });
 });
 
-// Obtener estadísticas de encuestas para el dashboard
+//estadísticas de encuestas para el dashboard
 app.get("/api/admin/encuesta/stats", verificarToken, (req, res) => {
     const sql = `
         SELECT 
@@ -452,7 +454,7 @@ app.get("/api/admin/encuesta/stats", verificarToken, (req, res) => {
     });
 });
 
-// Obtener distribución de áreas en los tests
+//distribucion de areas en los tests
 app.get("/api/admin/encuesta/distribucion-areas", verificarToken, (req, res) => {
     const sql = `
         SELECT 
@@ -475,7 +477,7 @@ app.get("/api/admin/encuesta/distribucion-areas", verificarToken, (req, res) => 
     });
 });
 
-// Obtener últimas encuestas realizadas
+// últimas encuestas realizadas
 app.get("/api/admin/encuesta/ultimas", verificarToken, (req, res) => {
     const sql = `
         SELECT 
@@ -499,11 +501,11 @@ app.get("/api/admin/encuesta/ultimas", verificarToken, (req, res) => {
     });
 });
 
-// Obtener preguntas por ID de encuesta (VERSIÓN CORREGIDA)
+//  preguntas por ID de encuesta
 app.get("/api/encuesta/:id_encuesta", (req, res) => {
     const idEncuesta = req.params.id_encuesta;
     
-    // Consulta para obtener preguntas con sus opciones
+    // consultar para obtener preguntas con sus opciones
     const sql = `
         SELECT 
             p.id_pregunta,
@@ -522,7 +524,7 @@ app.get("/api/encuesta/:id_encuesta", (req, res) => {
             return res.status(500).json({ error: err.message });
         }
         
-        // Organizar los datos en el formato que espera el frontend
+        // para orgainizar los datos en el formato para el front
         const preguntasMap = new Map();
         
         rows.forEach(row => {
@@ -555,7 +557,163 @@ app.get("/api/encuesta/:id_encuesta", (req, res) => {
     });
 });
 
-// Iniciar servidor
+
+/* BACKUP DE BASE DE DATOS */
+
+// endpoint para generar backup (solo superadmin)
+app.get("/api/admin/backup", verificarToken, verificarSuperAdmin, async (req, res) => {
+    try {
+        const tablas = [
+            'administrador', 'area_vocacional', 'carrera', 'encuesta',
+            'estado_universidad', 'opcion', 'opcion_area', 'pregunta',
+            'resultado_encuesta', 'rol_administrador', 'universidad'
+        ];
+        
+        let backupSQL = `-- =============================================\n`;
+        backupSQL += `-- BACKUP BASE DE DATOS UNIMATCH\n`;
+        backupSQL += `-- Fecha: ${new Date().toLocaleString('es-CO')}\n`;
+        backupSQL += `-- Generado por: ${req.adminId}\n`;
+        backupSQL += `-- =============================================\n\n`;
+        
+        backupSQL += `SET FOREIGN_KEY_CHECKS = 0;\n\n`;
+        
+        for (const tabla of tablas) {
+            // obtener estructura de la tabla
+            const [estructura] = await db.promise().query(`SHOW CREATE TABLE ${tabla}`);
+            if (estructura.length > 0) {
+                backupSQL += `-- -----------------------------------------------------\n`;
+                backupSQL += `-- Tabla: ${tabla}\n`;
+                backupSQL += `-- -----------------------------------------------------\n`;
+                backupSQL += `DROP TABLE IF EXISTS \`${tabla}\`;\n`;
+                backupSQL += estructura[0]['Create Table'] + ';\n\n';
+            }
+            
+            //recibir losdatos de la tabla
+            const [datos] = await db.promise().query(`SELECT * FROM ${tabla}`);
+            if (datos.length > 0) {
+                backupSQL += `-- Insertando datos en ${tabla} (${datos.length} registros)\n`;
+                
+                for (const row of datos) {
+                    const columns = Object.keys(row);
+                    const values = columns.map(col => {
+                        const val = row[col];
+                        if (val === null) return 'NULL';
+                        if (typeof val === 'string') return `'${val.replace(/'/g, "''")}'`;
+                        if (val instanceof Date) return `'${val.toISOString().slice(0, 19).replace('T', ' ')}'`;
+                        return val;
+                    });
+                    backupSQL += `INSERT INTO \`${tabla}\` (\`${columns.join('`, `')}\`) VALUES (${values.join(', ')});\n`;
+                }
+                backupSQL += `\n`;
+            }
+        }
+        
+        backupSQL += `SET FOREIGN_KEY_CHECKS = 1;\n`;
+        backupSQL += `-- =============================================\n`;
+        backupSQL += `-- FIN DEL BACKUP\n`;
+        backupSQL += `-- Total tablas: ${tablas.length}\n`;
+        backupSQL += `-- =============================================\n`;
+        
+        // configuracionc para descargar archivo
+        res.setHeader('Content-Type', 'application/sql');
+        res.setHeader('Content-Disposition', `attachment; filename=unimatch_backup_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.sql`);
+        res.send(backupSQL);
+        
+    } catch (error) {
+        console.error('Error generando backup:', error);
+        res.status(500).json({ mensaje: 'Error al generar el backup', error: error.message });
+    }
+});
+
+// endpoint para obtener información del backup (estadis)
+app.get("/api/admin/backup-info", verificarToken, verificarSuperAdmin, async (req, res) => {
+    try {
+        const tablas = [
+            'administrador', 'area_vocacional', 'carrera', 'encuesta',
+            'estado_universidad', 'opcion', 'opcion_area', 'pregunta',
+            'resultado_encuesta', 'rol_administrador', 'universidad'
+        ];
+        
+        const info = {};
+        for (const tabla of tablas) {
+            const [count] = await db.promise().query(`SELECT COUNT(*) as total FROM ${tabla}`);
+            info[tabla] = count[0].total;
+        }
+        
+        res.json({
+            fecha: new Date(),
+            tablas: info,
+            total_registros: Object.values(info).reduce((a, b) => a + b, 0)
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/*  RESTAURACIÓN BACKUP  */
+
+// endpoint para restaurar backup (solo para superadmin)
+app.post("/api/admin/restaurar-backup", verificarToken, verificarSuperAdmin, async (req, res) => {
+    //verificar que se envió un archivo
+    if (!req.files || !req.files.backupFile) {
+        return res.status(400).json({ mensaje: "No se envió ningún archivo de backup" });
+    }
+    
+    const backupFile = req.files.backupFile;
+    
+    //verificar extensión
+    if (!backupFile.name.endsWith('.sql')) {
+        return res.status(400).json({ mensaje: "El archivo debe tener extensión .sql" });
+    }
+    
+    //que lea el contenido del archivo
+    const sqlContent = backupFile.data.toString();
+    
+    // dividir las consultas SQL en este caso con ;)
+    const queries = sqlContent.split(';').filter(q => q.trim().length > 0);
+    
+    let restoredTables = [];
+    let errors = [];
+    
+    // quitar verificaciones de claves foráneas temporalmente
+    await db.promise().query('SET FOREIGN_KEY_CHECKS = 0');
+    
+    for (const query of queries) {
+        try {
+            await db.promise().query(query);
+            
+            // ver  qué tabla se está restaurando (para mostrar progreso)
+            const match = query.match(/INSERT INTO `?(\w+)`?/i);
+            if (match && !restoredTables.includes(match[1])) {
+                restoredTables.push(match[1]);
+            }
+        } catch (err) {
+            // se ignoran errores como lo de drop table
+            if (!err.message.includes('Unknown table') && !err.message.includes('already exists')) {
+                errors.push({ query: query.substring(0, 100), error: err.message });
+            }
+        }
+    }
+    
+    // tener en cuenta las verificaciones de claves foráneas
+    await db.promise().query('SET FOREIGN_KEY_CHECKS = 1');
+    
+    if (errors.length > 0) {
+        return res.status(500).json({
+            mensaje: "Backup restaurado con advertencias",
+            tablas_restauradas: restoredTables,
+            errores: errors.slice(0, 5) // Solo mostrar primeros 5 errores
+        });
+    }
+    
+    res.json({
+        mensaje: "✅ Backup restaurado exitosamente",
+        tablas_restauradas: restoredTables,
+        total_consultas: queries.length
+    });
+});
+
+// iniciar el servidor en el powershell de windows
 app.listen(3000, () => {
     console.log("Servidor corriendo en puerto 3000");
     console.log("API endpoints disponibles:");
