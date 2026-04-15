@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unimatch - Encuentra tu Universidad Ideal</title>
+    
+    <!-- Leaflet CSS (mapa) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <!-- Header / Hero Section -->
+    <header class="hero">
+        <nav class="navbar">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                <h1>Unimatch</h1>
+            </div>
+            <div class="nav-links">
+                <a href="#inicio" class="active">Inicio</a>
+                <a href="#universidades">Universidades</a>
+                <a href="#carreras">Carreras</a>
+                <a href="PruebaVocacional.html" class="btn-test">Hacer Test Vocacional</a>
+                <a href="loginAdmin.html" class="btn-admin">Admin</a>
+            </div>
+            <div class="menu-toggle" onclick="toggleMenu()">
+                <i class="fas fa-bars"></i>
+            </div>
+        </nav>
+        
+        <div class="hero-content">
+            <h1>Encuentra tu Universidad Ideal</h1>
+            <p>Descubre las mejores universidades de Colombia según tu ubicación y área de interés</p>
+            <div class="search-box-hero">
+                <input type="text" id="heroSearch" placeholder="Buscar por universidad, carrera o ubicación...">
+                <button onclick="buscarGlobal()"><i class="fas fa-search"></i> Buscar</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mapa Interactivo Section -->
+    <section id="mapa-section" class="mapa-section">
+        <div class="container">
+            <h2><i class="fas fa-map-marked-alt"></i> Explora Universidades por Departamento</h2>
+            <p>Haz clic en cualquier departamento para ver las universidades disponibles</p>
+            
+            <div class="map-container">
+                <div id="map"></div>
+                <div id="map-info" class="map-info">
+                    <h3 id="selected-department">Selecciona un departamento</h3>
+                    <div id="universidades-list" class="universidades-list">
+                        <p class="empty-message">Haz clic en un departamento para ver las universidades</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filtros por Ciudad y Departamento -->
+    <section id="filtros-section" class="filtros-section">
+        <div class="container">
+            <h2><i class="fas fa-filter"></i> Filtrar Universidades</h2>
+            <div class="filtros-grid">
+                <div class="filtro-group">
+                    <label><i class="fas fa-map-marker-alt"></i> Departamento</label>
+                    <select id="filtro-departamento" onchange="filtrarPorDepartamento()">
+                        <option value="">Todos los departamentos</option>
+                    </select>
+                </div>
+                <div class="filtro-group">
+                    <label><i class="fas fa-city"></i> Ciudad</label>
+                    <select id="filtro-ciudad" onchange="filtrarPorCiudad()">
+                        <option value="">Todas las ciudades</option>
+                    </select>
+                </div>
+                <div class="filtro-group">
+                    <label><i class="fas fa-search"></i> Buscar universidad</label>
+                    <input type="text" id="filtro-nombre" placeholder="Nombre de la universidad..." onkeyup="filtrarPorNombre()">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Lista de Universidades -->
+    <section id="universidades-section" class="universidades-section">
+        <div class="container">
+            <h2><i class="fas fa-university"></i> Universidades en Colombia</h2>
+            <div id="universidades-grid" class="universidades-grid">
+                <!-- Se cargarán dinámicamente -->
+                <div class="loading-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Cargando universidades...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Carreras Destacadas -->
+    <section id="carreras-section" class="carreras-section">
+        <div class="container">
+            <h2><i class="fas fa-book-open"></i> Carreras Destacadas</h2>
+            <div id="carreras-grid" class="carreras-grid">
+                <!-- Se cargarán dinámicamente -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <h3>Unimatch</h3>
+                    <p>Encuentra tu camino académico</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Enlaces rápidos</h4>
+                    <a href="#inicio">Inicio</a>
+                    <a href="#mapa-section">Mapa</a>
+                    <a href="#universidades-section">Universidades</a>
+                    <a href="/PruebaVocacional.html">Test Vocacional</a>
+                </div>
+                <div class="footer-contact">
+                    <h4>Contacto</h4>
+                    <p><i class="fas fa-envelope"></i> info@unimatch.com</p>
+                    <p><i class="fas fa-phone"></i> +57 300 123 4567</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Unimatch - Todos los derechos reservados</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
