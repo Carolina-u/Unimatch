@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Vocacional - Unimatch</title>
+    <link rel="stylesheet" href="PruebaVocacional.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="encuesta-container">
+        <div class="header">
+            <i class="fas fa-graduation-cap"></i>
+            <h1>Test Vocacional Unimatch</h1>
+            <p>Descubre qué área profesional se adapta mejor a tu perfil</p>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress" id="progress"></div>
+        </div>
+
+        <div class="questions-container" id="questionsContainer">
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>Cargando preguntas...</p>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button id="prevBtn" class="btn-secondary" onclick="prevQuestion()" disabled>
+                <i class="fas fa-arrow-left"></i> Anterior
+            </button>
+            <button id="nextBtn" class="btn-primary" onclick="nextQuestion()">
+                Siguiente <i class="fas fa-arrow-right"></i>
+            </button>
+            <button id="submitBtn" class="btn-success" onclick="submitEncuesta()" style="display:none;">
+                Ver Resultados <i class="fas fa-chart-line"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="resultadosModal" class="modal" style="display:none;">
+        <div class="modal-content resultados-content">
+            <i class="fas fa-chart-pie"></i>
+            <h2>¡Tu resultado!</h2>
+            <div id="resultadosContainer"></div>
+            <button onclick="cerrarResultados()" class="btn-primary">Cerrar</button>
+        </div>
+    </div>
+
+    <script src="PruebaVocacional.js"></script>
+</body>
+</html>
