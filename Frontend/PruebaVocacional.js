@@ -2,7 +2,7 @@ const API = "http://localhost:3000/api";
 let preguntas = [];
 let respuestasUsuario = [];
 let preguntaActual = 0;
-let idEncuesta = 1; // ID de la encuesta que quieres mostrar
+let idEncuesta = 1; // ID de la encuesta/mostrar
 
 // Cargar preguntas al iniciar
 async function cargarPreguntas() {
