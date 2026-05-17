@@ -3,36 +3,39 @@ let map;
 let geoJsonLayer;
 let universidades = [];
 let carreras = [];
-let departamentosMap = new Map();
+let currentLayer = null;
 
-// iniciar mapa
+// Inicializar mapa
 async function initMap() {
-    // mapa centrado en Colombia con restricciones
-    const colombiaBounds = L.latLngBounds([-4.5, -82.0], [13.0, -66.5]);
+    // Límites exactos de Colombia
+    const colombiaBounds = L.latLngBounds([-4.5, -79.0], [13.0, -66.5]);
     
     map = L.map('map', {
         center: [4.5709, -74.2973],
         zoom: 6,
         minZoom: 5,
-        maxZoom: 11,
+        maxZoom: 9,
         maxBounds: colombiaBounds,
-        maxBoundsViscosity: 1.0
+        maxBoundsViscosity: 1.0,
+        zoomControl: true
     });
     
-    // capa de OpenStreetMap
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
+    // Fondo gris claro
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; CartoDB',
+        subdomains: 'abcd',
+        maxZoom: 19,
+        minZoom: 5
     }).addTo(map);
     
-    // datos de universidades
+    // Cargar datos
     await cargarUniversidades();
     await cargarCarreras();
-    
-    //mostrar el mapa de Colombia (geojson)
+    await cargarMapaColombia();
     llenarFiltros();
 }
 
-//  universidades desde el backend
+// Cargar universidades
 async function cargarUniversidades() {
     try {
         const response = await fetch(`${API}/universidades`);
@@ -44,7 +47,7 @@ async function cargarUniversidades() {
     }
 }
 
-// cargar carreras
+// Cargar carreras
 async function cargarCarreras() {
     try {
         const response = await fetch(`${API}/carreras`);
@@ -56,21 +59,115 @@ async function cargarCarreras() {
     }
 }
 
-// Ccrgar mapa de Colombia (GeoJSON)
+// Cargar mapa de Colombia desde archivo local (geoBoundaries)
 async function cargarMapaColombia() {
-    // Agrupar universidades por departamento
-    const universidadesPorDepto = {};
+    console.log("🔄 Cargando mapa de Colombia desde archivo local...");
+
+    try {
+        const response = await fetch('colombia.geojson');
+        
+        if (!response.ok) {
+            throw new Error(`No se pudo cargar colombia.geojson`);
+        }
+
+        const geojsonData = await response.json();
+        console.log("✅ GeoJSON cargado correctamente");
+
+        // Agrupar universidades por departamento
+        const universidadesPorDepto = {};
+        universidades.forEach(u => {
+            const depto = u.departamento;
+            if (!universidadesPorDepto[depto]) {
+                universidadesPorDepto[depto] = [];
+            }
+            universidadesPorDepto[depto].push(u);
+        });
+
+        if (geoJsonLayer) {
+            map.removeLayer(geoJsonLayer);
+        }
+
+        function getDepartmentName(feature) {
+            return feature.properties?.shapeName || 
+                   feature.properties?.NOMBRE_DPT || 
+                   feature.properties?.name || 
+                   'Desconocido';
+        }
+
+        geoJsonLayer = L.geoJSON(geojsonData, {
+            style: function(feature) {
+                return {
+                    color: '#2c3e50',
+                    weight: 1.5,
+                    fillColor: '#3498db',
+                    fillOpacity: 0.5
+                };
+            },
+            onEachFeature: function(feature, layer) {
+                const nombreDepto = getDepartmentName(feature);
+                const unis = universidadesPorDepto[nombreDepto] || [];
+                const totalUnis = unis.length;
+                console.log(`Departamento: ${nombreDepto}, Universidades: ${totalUnis}`);
+
+                // Tooltip
+                layer.bindTooltip(nombreDepto, { sticky: true, className: 'deptoTooltip' });
+
+                // Estilos para hover
+                const estiloOriginal = {
+                    color: '#2c3e50',
+                    weight: 1.5,
+                    fillColor: '#3498db',
+                    fillOpacity: 0.5
+                };
+                const estiloHover = {
+                    color: '#c0392b',
+                    weight: 2.5,
+                    fillColor: '#e74c3c',
+                    fillOpacity: 0.7
+                };
+
+                layer.on('mouseover', function() {
+                    layer.setStyle(estiloHover);
+                    layer.bringToFront();
+                });
+                layer.on('mouseout', function() {
+                    layer.setStyle(estiloOriginal);
+                });
+
+                // Click para mostrar universidades en el lateral
+                layer.on('click', () => {
+                    if (totalUnis > 0) {
+                        seleccionarDepartamento(nombreDepto);
+                    } else {
+                        alert(`No hay universidades registradas en ${nombreDepto}`);
+                    }
+                });
+            }
+        }).addTo(map);
+
+        map.fitBounds(geoJsonLayer.getBounds());
+        console.log("✅ Mapa de Colombia cargado correctamente");
+
+    } catch (error) {
+        console.error('Error cargando el mapa:', error);
+        cargarMarcadoresFallback();
+    }
+}
+
+// Función de respaldo (marcadores)
+function cargarMarcadoresFallback() {
+    console.log('⚠️ Usando marcadores de respaldo');
+    
+    const departamentosConUniversidades = {};
     universidades.forEach(u => {
         const depto = u.departamento;
-        if (!universidadesPorDepto[depto]) {
-            universidadesPorDepto[depto] = [];
+        if (!departamentosConUniversidades[depto]) {
+            departamentosConUniversidades[depto] = [];
         }
-        universidadesPorDepto[depto].push(u);
-        departamentosMap.set(depto, universidadesPorDepto[depto]);
+        departamentosConUniversidades[depto].push(u);
     });
     
-    //marcadores para cada departamento
-    const coordenadasDepartamentos = {
+    const coordenadas = {
         'Antioquia': [6.2442, -75.5812],
         'Bogotá': [4.7110, -74.0721],
         'Valle del Cauca': [3.4516, -76.5320],
@@ -105,43 +202,78 @@ async function cargarMapaColombia() {
         'Casanare': [5.4295, -71.7490]
     };
     
-    //marcadores para departamentos con universidades
-    Object.keys(coordenadasDepartamentos).forEach(depto => {
-        const unis = universidadesPorDepto[depto];
+    Object.keys(coordenadas).forEach(depto => {
+        const unis = departamentosConUniversidades[depto];
         if (unis && unis.length > 0) {
-            const coords = coordenadasDepartamentos[depto];
-            const marker = L.marker(coords).addTo(map);
-            
+            const marker = L.marker(coordenadas[depto]).addTo(map);
             marker.bindPopup(`
-                <div style="max-width: 300px;">
-                    <h3 style="color: #667eea;">${depto}</h3>
-                    <p><strong>${unis.length}</strong> universidades disponibles</p>
-                    <button onclick="mostrarUniversidadesDepto('${depto}')" 
-                        style="background: #667eea; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">
-                        Ver universidades
-                    </button>
+                <div style="text-align: center;">
+                    <strong>${depto}</strong><br>
+                    🏛️ ${unis.length} universidades<br>
+                    <button onclick="seleccionarDepartamento('${depto}')">Ver universidades</button>
                 </div>
             `);
-            
-            marker.on('click', () => {
-                mostrarUniversidadesDepto(depto);
-            });
         }
     });
 }
 
-// mostrar  universidades de un departamento
+// ==================== FUNCIÓN PRINCIPAL PARA SELECCIONAR DEPARTAMENTO ====================
+function seleccionarDepartamento(departamento) {
+    console.log(`🖱️ Seleccionado departamento: ${departamento}`);
+    
+    // Actualizar el selector de filtro
+    const deptoSelect = document.getElementById('filtro-departamento');
+    if (deptoSelect) {
+        deptoSelect.value = departamento;
+        // Forzar el evento de cambio para actualizar los filtros
+        if (typeof filtrarPorDepartamento === 'function') {
+            filtrarPorDepartamento();
+        }
+    }
+    
+    // Mostrar universidades en el panel lateral
+    mostrarUniversidadesDepto(departamento);
+    
+    // Centrar mapa en el departamento (opcional)
+    if (geoJsonLayer) {
+        let deptoLayer = null;
+        geoJsonLayer.eachLayer(function(layer) {
+            if (layer.feature) {
+                const nombreFeature = getDepartmentName(layer.feature);
+                if (nombreFeature === departamento) {
+                    deptoLayer = layer;
+                }
+            }
+        });
+        if (deptoLayer) {
+            map.fitBounds(deptoLayer.getBounds());
+        }
+    }
+}
+
+// Función auxiliar para obtener nombre del departamento desde el feature
+function getDepartmentName(feature) {
+    return feature.properties?.shapeName || 
+           feature.properties?.NOMBRE_DPT || 
+           feature.properties?.name || 
+           'Desconocido';
+}
+
+// Mostrar universidades de un departamento en el panel lateral
 function mostrarUniversidadesDepto(departamento) {
     const unis = universidades.filter(u => u.departamento === departamento);
     const container = document.getElementById('universidades-list');
     const title = document.getElementById('selected-department');
     
-    title.textContent = `${departamento} (${unis.length} universidades)`;
+    if (!container || !title) return;
     
     if (unis.length === 0) {
-        container.innerHTML = '<p class="empty-message">No hay universidades en este departamento</p>';
+        title.textContent = `${departamento} (0 universidades)`;
+        container.innerHTML = '<p class="empty-message">No hay universidades registradas en este departamento</p>';
         return;
     }
+    
+    title.textContent = `${departamento} (${unis.length} universidades)`;
     
     container.innerHTML = unis.map(u => `
         <div class="universidad-item" onclick="verUniversidad(${u.id_universidad})">
@@ -153,13 +285,12 @@ function mostrarUniversidadesDepto(departamento) {
             </p>
         </div>
     `).join('');
-    
-    document.getElementById('map-info').scrollIntoView({ behavior: 'smooth' });
 }
 
-//universidades en crud
+// Renderizar universidades en grid
 function renderUniversidades() {
     const container = document.getElementById('universidades-grid');
+    if (!container) return;
     
     if (universidades.length === 0) {
         container.innerHTML = '<div class="loading-spinner"><i class="fas fa-exclamation-circle"></i><p>No hay universidades registradas</p></div>';
@@ -174,21 +305,22 @@ function renderUniversidades() {
             </div>
             <div class="universidad-card-body">
                 <p><i class="fas fa-map-marker-alt"></i> ${escapeHtml(u.ciudad)}, ${escapeHtml(u.departamento)}</p>
-                <p><i class="fas fa-globe"></i> <a href="${u.sitio_web || '#'}" target="_blank" onclick="event.stopPropagation()">${u.sitio_web || 'Sitio web no disponible'}</a></p>
                 <p><i class="fas fa-info-circle"></i> ${escapeHtml(u.descripcion ? u.descripcion.substring(0, 100) : 'Sin descripción')}${u.descripcion && u.descripcion.length > 100 ? '...' : ''}</p>
             </div>
             <div class="universidad-card-footer">
                 <button class="btn-ver-carreras" onclick="event.stopPropagation(); verUniversidad(${u.id_universidad})">
-                    <i class="fas fa-book"></i> Ver carreras 
+                    <i class="fas fa-book"></i> Ver carreras
                 </button>
             </div>
         </div>
     `).join('');
 }
 
-//carreras destacadas (primeras 6)
+// Renderizar carreras destacadas (primeras 6)
 function renderCarrerasDestacadas() {
     const container = document.getElementById('carreras-grid');
+    if (!container) return;
+    
     const carrerasDestacadas = carreras.slice(0, 6);
     
     if (carrerasDestacadas.length === 0) {
@@ -208,54 +340,69 @@ function renderCarrerasDestacadas() {
     `).join('');
 }
 
-// ver universidad específica (redirige a página de detalle)
+// Ver universidad específica
 function verUniversidad(idUniversidad) {
     window.location.href = `uniDetalle.html?id=${idUniversidad}`;
 }
 
-// llenar filtros de departamento y ciudad
+// Llenar filtros
 function llenarFiltros() {
     const departamentos = [...new Set(universidades.map(u => u.departamento))].sort();
     const deptoSelect = document.getElementById('filtro-departamento');
     const ciudadSelect = document.getElementById('filtro-ciudad');
     
-    deptoSelect.innerHTML = '<option value="">Todos los departamentos</option>' + 
-        departamentos.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+    if (deptoSelect) {
+        deptoSelect.innerHTML = '<option value="">Todos los departamentos</option>' + 
+            departamentos.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+    }
+    
+    if (ciudadSelect) {
+        ciudadSelect.innerHTML = '<option value="">Todas las ciudades</option>';
+        ciudadSelect.disabled = true;
+    }
 }
 
-// filtrar por departamento
+// Filtrar por departamento
 function filtrarPorDepartamento() {
     const depto = document.getElementById('filtro-departamento').value;
     const ciudadSelect = document.getElementById('filtro-ciudad');
     
-    if (depto) {
+    if (depto && ciudadSelect) {
         const ciudades = [...new Set(universidades.filter(u => u.departamento === depto).map(u => u.ciudad))].sort();
         ciudadSelect.innerHTML = '<option value="">Todas las ciudades</option>' + 
             ciudades.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
         ciudadSelect.disabled = false;
-    } else {
+    } else if (ciudadSelect) {
         ciudadSelect.innerHTML = '<option value="">Todas las ciudades</option>';
         ciudadSelect.disabled = true;
     }
     
     filtrarUniversidades();
+    
+    // Mostrar universidades del departamento seleccionado en el mapa
+    if (depto) {
+        mostrarUniversidadesDepto(depto);
+    }
 }
 
-// filtrar por ciudad
+// Filtrar por ciudad
 function filtrarPorCiudad() {
     filtrarUniversidades();
 }
 
-// filtrar por nombre
+// Filtrar por nombre
 function filtrarPorNombre() {
     filtrarUniversidades();
 }
 
-// filtrar universidades según todos depa, ciudad, nombre
+// Filtrar universidades
+// Filtrar universidades
 function filtrarUniversidades() {
     const depto = document.getElementById('filtro-departamento').value;
     const ciudad = document.getElementById('filtro-ciudad').value;
-    const nombre = document.getElementById('filtro-nombre').value.toLowerCase();
+    // ✅ Verificar que existe antes de usarlo
+    const nombreInput = document.getElementById('filtro-nombre');
+    const nombre = nombreInput ? nombreInput.value.toLowerCase() : '';
     
     let filtered = universidades;
     
@@ -272,6 +419,7 @@ function filtrarUniversidades() {
     }
     
     const container = document.getElementById('universidades-grid');
+    if (!container) return;
     
     if (filtered.length === 0) {
         container.innerHTML = '<div class="loading-spinner"><i class="fas fa-search"></i><p>No se encontraron universidades</p></div>';
@@ -290,27 +438,25 @@ function filtrarUniversidades() {
             </div>
             <div class="universidad-card-footer">
                 <button class="btn-ver-carreras" onclick="event.stopPropagation(); verUniversidad(${u.id_universidad})">
-                    <i class="fas fa-book"></i> Ver carreras (${carreras.filter(c => c.id_universidad === u.id_universidad).length})
+                    <i class="fas fa-book"></i> Ver carreras
                 </button>
             </div>
         </div>
     `).join('');
 }
 
-//bussqueda global
+// Búsqueda global
 function buscarGlobal() {
     const busqueda = document.getElementById('heroSearch').value.toLowerCase();
     
     if (!busqueda) return;
     
-    // Buscar en universidades
     const unisEncontradas = universidades.filter(u => 
         u.nombre.toLowerCase().includes(busqueda) || 
         u.ciudad.toLowerCase().includes(busqueda) ||
         u.departamento.toLowerCase().includes(busqueda)
     );
     
-    //buscar en carreras
     const carrerasEncontradas = carreras.filter(c => 
         c.nombre.toLowerCase().includes(busqueda) ||
         c.area_nombre.toLowerCase().includes(busqueda)
@@ -342,12 +488,10 @@ function buscarGlobal() {
     }
 }
 
-// toggle menu responsive
 function toggleMenu() {
     document.querySelector('.nav-links').classList.toggle('active');
 }
 
-// funcion escape HTML
 function escapeHtml(str) {
     if (!str) return '';
     return str
@@ -358,7 +502,7 @@ function escapeHtml(str) {
         .replace(/'/g, "&#039;");
 }
 
-// inicializar todo al cargar la página
+// Inicializar
 document.addEventListener('DOMContentLoaded', () => {
     initMap();
 });
