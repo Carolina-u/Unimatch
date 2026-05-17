@@ -1,8 +1,8 @@
 const API = "http://localhost:3000/api";
 let preguntas = [];
-let respuestasUsuario = [];
+let respuestasUsuario = []; // Ahora cada pregunta tendrá un ARRAY de opciones seleccionadas
 let preguntaActual = 0;
-let idEncuesta = 1; // ID de la encuesta/mostrar
+let idEncuesta = 1;
 
 // Cargar preguntas al iniciar
 async function cargarPreguntas() {
@@ -19,7 +19,8 @@ async function cargarPreguntas() {
             throw new Error("No hay preguntas disponibles");
         }
         
-        respuestasUsuario = new Array(preguntas.length).fill(null);
+        // Inicializar respuestas como arrays vacíos
+        respuestasUsuario = new Array(preguntas.length).fill().map(() => []);
         mostrarPregunta(0);
         
     } catch (error) {
@@ -48,12 +49,14 @@ function mostrarPregunta(index) {
     
     let opcionesHTML = '';
     if (pregunta.opciones && pregunta.opciones.length > 0) {
+        const seleccionadas = respuestasUsuario[index] || [];
+        
         pregunta.opciones.forEach(opcion => {
-            const isChecked = respuestasUsuario[index] === opcion.id_opcion;
+            const isChecked = seleccionadas.includes(opcion.id_opcion);
             opcionesHTML += `
-                <div class="opcion-card" onclick="seleccionarOpcion(${index}, ${opcion.id_opcion})">
-                    <div class="radio-custom ${isChecked ? 'checked' : ''}">
-                        ${isChecked ? '<i class="fas fa-check-circle"></i>' : '<i class="far fa-circle"></i>'}
+                <div class="opcion-card" onclick="toggleOpcion(${index}, ${opcion.id_opcion})">
+                    <div class="checkbox-custom ${isChecked ? 'checked' : ''}">
+                        ${isChecked ? '<i class="fas fa-check-square"></i>' : '<i class="far fa-square"></i>'}
                     </div>
                     <div class="opcion-texto">${escapeHtml(opcion.texto)}</div>
                 </div>
@@ -67,6 +70,9 @@ function mostrarPregunta(index) {
             <div class="question-text">${escapeHtml(pregunta.texto)}</div>
             <div class="opciones-container">
                 ${opcionesHTML}
+            </div>
+            <div class="selected-info" style="margin-top: 1rem; font-size: 0.8rem; color: #a855f7;">
+                <i class="fas fa-info-circle"></i> Puedes seleccionar varias opciones
             </div>
         </div>
     `;
@@ -87,15 +93,31 @@ function mostrarPregunta(index) {
     }
 }
 
-function seleccionarOpcion(preguntaIndex, opcionId) {
-    respuestasUsuario[preguntaIndex] = opcionId;
+// Función para seleccionar/deseleccionar opción (checkbox)
+function toggleOpcion(preguntaIndex, opcionId) {
+    if (!respuestasUsuario[preguntaIndex]) {
+        respuestasUsuario[preguntaIndex] = [];
+    }
+    
+    const index = respuestasUsuario[preguntaIndex].indexOf(opcionId);
+    
+    if (index === -1) {
+        // Agregar opción
+        respuestasUsuario[preguntaIndex].push(opcionId);
+    } else {
+        // Quitar opción
+        respuestasUsuario[preguntaIndex].splice(index, 1);
+    }
+    
+    // Re-renderizar la pregunta actual para mostrar los cambios visuales
     mostrarPregunta(preguntaActual);
 }
 
 function nextQuestion() {
     if (preguntaActual < preguntas.length - 1) {
-        if (respuestasUsuario[preguntaActual] === null) {
-            mostrarNotificacion("Por favor selecciona una respuesta antes de continuar", "error");
+        // Verificar que haya al menos una opción seleccionada
+        if (!respuestasUsuario[preguntaActual] || respuestasUsuario[preguntaActual].length === 0) {
+            mostrarNotificacion("Por favor selecciona al menos una opción antes de continuar", "error");
             return;
         }
         preguntaActual++;
@@ -111,35 +133,35 @@ function prevQuestion() {
 }
 
 async function submitEncuesta() {
-    // Verificar que todas las preguntas estén respondidas
-    if (respuestasUsuario.some(r => r === null)) {
-        mostrarNotificacion("Por favor completa todas las preguntas antes de enviar", "error");
-        return;
+    // Verificar que todas las preguntas tengan al menos una respuesta
+    for (let i = 0; i < respuestasUsuario.length; i++) {
+        if (!respuestasUsuario[i] || respuestasUsuario[i].length === 0) {
+            mostrarNotificacion(`Por favor completa todas las preguntas antes de enviar (falta pregunta ${i + 1})`, "error");
+            return;
+        }
     }
     
-    // Mostrar loading
     const submitBtn = document.getElementById('submitBtn');
     const originalText = submitBtn.innerHTML;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
     submitBtn.disabled = true;
     
     try {
-        // Calcular puntajes por área
-        const puntajes = await calcularPuntajes();
+        // Calcular puntajes acumulando todas las opciones seleccionadas
+        const puntajes = await calcularPuntajesMultiples();
         
         // Determinar área principal (la de mayor puntaje)
         const areaPrincipal = Object.keys(puntajes).reduce((a, b) => 
             puntajes[a] > puntajes[b] ? a : b, Object.keys(puntajes)[0]
         );
         
-        // Preparar respuestas
-        const respuestas = respuestasUsuario.map((respuesta, index) => ({
+        // Preparar respuestas (ahora cada pregunta puede tener múltiples opciones)
+        const respuestas = respuestasUsuario.map((respuestasArray, index) => ({
             id_pregunta: preguntas[index].id_pregunta,
-            id_opcion_seleccionada: respuesta
+            opciones_seleccionadas: respuestasArray // Array de IDs
         }));
         
-        // Enviar resultado
-        const response = await fetch(`${API}/encuesta/resultado`, {
+        const response = await fetch(`${API}/encuesta/resultado-multiple`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -152,7 +174,6 @@ async function submitEncuesta() {
         const data = await response.json();
         
         if (response.ok) {
-            // Mostrar resultados en modal
             mostrarResultados(data, puntajes);
         } else {
             mostrarNotificacion(data.mensaje || "Error al guardar el resultado", "error");
@@ -166,25 +187,28 @@ async function submitEncuesta() {
     }
 }
 
-async function calcularPuntajes() {
+// Calcular puntajes sumando todas las opciones seleccionadas
+async function calcularPuntajesMultiples() {
     const puntajesPorArea = {};
     
     for (let i = 0; i < respuestasUsuario.length; i++) {
-        const opcionId = respuestasUsuario[i];
+        const opcionesIds = respuestasUsuario[i];
         
-        if (opcionId) {
-            try {
-                const response = await fetch(`${API}/opcion-puntajes/${opcionId}`);
-                const puntajesOpcion = await response.json();
-                
-                puntajesOpcion.forEach(p => {
-                    if (!puntajesPorArea[p.id_area]) {
-                        puntajesPorArea[p.id_area] = 0;
-                    }
-                    puntajesPorArea[p.id_area] += p.puntaje;
-                });
-            } catch (error) {
-                console.error(`Error obteniendo puntajes para opción ${opcionId}:`, error);
+        if (opcionesIds && opcionesIds.length > 0) {
+            for (const opcionId of opcionesIds) {
+                try {
+                    const response = await fetch(`${API}/opcion-puntajes/${opcionId}`);
+                    const puntajesOpcion = await response.json();
+                    
+                    puntajesOpcion.forEach(p => {
+                        if (!puntajesPorArea[p.id_area]) {
+                            puntajesPorArea[p.id_area] = 0;
+                        }
+                        puntajesPorArea[p.id_area] += p.puntaje;
+                    });
+                } catch (error) {
+                    console.error(`Error obteniendo puntajes para opción ${opcionId}:`, error);
+                }
             }
         }
     }
@@ -196,7 +220,6 @@ function mostrarResultados(data, puntajes) {
     const modal = document.getElementById('resultadosModal');
     const container = document.getElementById('resultadosContainer');
     
-    // Obtener nombre del área principal
     let areaNombre = "Área no identificada";
     if (dbAreas && dbAreas.length > 0) {
         const area = dbAreas.find(a => a.id_area === data.area_recomendada);
@@ -222,7 +245,6 @@ function mostrarResultados(data, puntajes) {
         universidadesHTML = '<p style="color: #c4b5fd;">No hay universidades recomendadas para esta área aún.</p>';
     }
     
-    // Mostrar puntajes
     let puntajesHTML = '<div style="margin: 1rem 0; text-align: left;"><h3 style="color: #e9d5ff;">Tus puntajes por área:</h3>';
     const areasOrdenadas = Object.entries(puntajes).sort((a, b) => b[1] - a[1]);
     
@@ -264,8 +286,7 @@ function mostrarResultados(data, puntajes) {
 
 function guardarYReiniciar() {
     cerrarResultados();
-    // Reiniciar test
-    respuestasUsuario = new Array(preguntas.length).fill(null);
+    respuestasUsuario = new Array(preguntas.length).fill().map(() => []);
     preguntaActual = 0;
     mostrarPregunta(0);
 }
@@ -276,7 +297,6 @@ function cerrarResultados() {
 }
 
 function mostrarNotificacion(mensaje, tipo = "info") {
-    // Crear notificación temporal
     const notification = document.createElement('div');
     notification.className = `notification ${tipo}`;
     notification.textContent = mensaje;
@@ -310,10 +330,8 @@ function escapeHtml(str) {
         .replace(/'/g, "&#039;");
 }
 
-// Variables globales para áreas
 let dbAreas = [];
 
-// Cargar áreas para mostrar nombres
 async function cargarAreas() {
     try {
         const response = await fetch(`${API}/areas`);
@@ -323,11 +341,9 @@ async function cargarAreas() {
     }
 }
 
-// Inicializar
 async function init() {
     await cargarAreas();
     await cargarPreguntas();
 }
 
-// Iniciar
 init();
