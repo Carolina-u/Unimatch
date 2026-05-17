@@ -27,9 +27,8 @@
                 <h1>Unimatch</h1>
             </div>
             <div class="nav-links">
-                <a href="#inicio" class="active">Inicio</a>
-                <a href="#universidades">Universidades</a>
-                <a href="#carreras">Carreras</a>
+                <a href="#universidades-section">Universidades</a>
+                <a href="#carreras-section">Carreras</a>
                 <a href="PruebaVocacional.html" class="btn-test">Hacer Test Vocacional</a>
                 <a href="loginAdmin.html" class="btn-admin">Admin</a>
             </div>
@@ -47,6 +46,26 @@
             </div>
         </div>
     </header>
+    <!-- Filtros por Ciudad y Departamento -->
+    <section id="filtros-section" class="filtros-section">
+        <div class="container">
+            <h2><i class="fas fa-filter"></i> Filtrar Universidades</h2>
+            <div class="filtros-grid">
+                <div class="filtro-group">
+                    <label><i class="fas fa-map-marker-alt"></i> Departamento</label>
+                    <select id="filtro-departamento" onchange="filtrarPorDepartamento()">
+                        <option value="">Todos los departamentos</option>
+                    </select>
+                </div>
+                <div class="filtro-group">
+                    <label><i class="fas fa-city"></i> Ciudad</label>
+                    <select id="filtro-ciudad" onchange="filtrarPorCiudad()">
+                        <option value="">Todas las ciudades</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- Mapa Interactivo Section -->
     <section id="mapa-section" class="mapa-section">
@@ -66,30 +85,7 @@
         </div>
     </section>
 
-    <!-- Filtros por Ciudad y Departamento -->
-    <section id="filtros-section" class="filtros-section">
-        <div class="container">
-            <h2><i class="fas fa-filter"></i> Filtrar Universidades</h2>
-            <div class="filtros-grid">
-                <div class="filtro-group">
-                    <label><i class="fas fa-map-marker-alt"></i> Departamento</label>
-                    <select id="filtro-departamento" onchange="filtrarPorDepartamento()">
-                        <option value="">Todos los departamentos</option>
-                    </select>
-                </div>
-                <div class="filtro-group">
-                    <label><i class="fas fa-city"></i> Ciudad</label>
-                    <select id="filtro-ciudad" onchange="filtrarPorCiudad()">
-                        <option value="">Todas las ciudades</option>
-                    </select>
-                </div>
-                <div class="filtro-group">
-                    <label><i class="fas fa-search"></i> Buscar universidad</label>
-                    <input type="text" id="filtro-nombre" placeholder="Nombre de la universidad..." onkeyup="filtrarPorNombre()">
-                </div>
-            </div>
-        </div>
-    </section>
+    
 
     <!-- Lista de Universidades -->
     <section id="universidades-section" class="universidades-section">
@@ -126,7 +122,6 @@
                 </div>
                 <div class="footer-links">
                     <h4>Enlaces rápidos</h4>
-                    <a href="#inicio">Inicio</a>
                     <a href="#mapa-section">Mapa</a>
                     <a href="#universidades-section">Universidades</a>
                     <a href="/PruebaVocacional.html">Test Vocacional</a>
@@ -138,7 +133,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2024 Unimatch - Todos los derechos reservados</p>
+                <p>&copy; 2026 Unimatch - Todos los derechos reservados</p>
             </div>
         </div>
     </footer>
